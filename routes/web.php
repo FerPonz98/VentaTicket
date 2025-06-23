@@ -8,10 +8,18 @@ use App\Http\Controllers\CajeroController;
 use App\Http\Controllers\ChoferController;
 use App\Http\Controllers\AyudanteController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RecoverPasswordController;
 
 Route::redirect('/', '/login');
+Route::get('/recover', [RecoverPasswordController::class, 'showForm'])->name('recover.form');
+Route::get('/recover/question/{ci_usuario}', [RecoverPasswordController::class, 'showQuestion'])->name('recover.question');
+Route::post('/recover/validate-answer/{ci_usuario}', [RecoverPasswordController::class, 'validateAnswer'])->name('recover.answer.validate');
+Route::post('/recover/check', [RecoverPasswordController::class, 'check'])->name('recover.check');
+Route::post('/recover/reset/{ci_usuario}', [RecoverPasswordController::class, 'updatePassword'])->name('recover.reset.submit');
+
 
 require __DIR__.'/auth.php';
+
 
 Route::middleware(['auth','role:admin'])->group(function(){
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
