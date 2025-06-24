@@ -9,7 +9,7 @@
 <body class="h-full flex">
   <aside class="w-64 bg-gray-800 text-gray-200 flex flex-col">
     <div class="p-6 flex items-center">
-      <x-application-logo class="h-8 w-auto fill-current"/>
+      <img src="{{ asset('img/logo-empresa.jpg') }}" alt="Logo Empresa" class="h-8 w-auto"/>
       <span class="ml-2 font-bold text-lg">Mi Sistema</span>
     </div>
     <nav class="flex-1 overflow-y-auto">
@@ -86,10 +86,17 @@
     </nav>
     <div class="p-4 border-t border-gray-700">
       <div class="flex items-center space-x-3">
-        <div class="h-8 w-8 bg-gray-600 rounded-full"></div>
-        <div>
-          <div class="text-sm">{{ Auth::user()->nombre_usuario }}</div>
-          <form method="POST" action="{{ route('logout') }}">
+        @if(Auth::user()->foto)
+          <img src="{{ asset('storage/' . Auth::user()->foto) }}"
+               alt="Avatar de {{ Auth::user()->nombre_usuario }}"
+               class="h-8 w-8 rounded-full object-cover"/>
+        @else
+          <div class="h-8 w-8 bg-gray-600 rounded-full"></div>
+        @endif
+        <div class="flex flex-col">
+          <span class="text-sm font-medium text-white">{{ Auth::user()->nombre_usuario }}</span>
+          <span class="text-xs text-gray-400">{{ ucfirst(Auth::user()->rol) }}</span>
+          <form method="POST" action="{{ route('logout') }}" class="mt-1">
             @csrf
             <button type="submit" class="text-xs text-gray-400 hover:underline">Salir</button>
           </form>
