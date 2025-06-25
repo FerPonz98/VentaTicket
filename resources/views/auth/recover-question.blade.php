@@ -1,0 +1,43 @@
+<x-guest-layout>
+    <div class="mb-4 text-sm text-gray-600">
+        {{ __('Responde la pregunta secreta para recuperar tu contraseña.') }}
+    </div>
+
+    <form method="POST" action="{{ route('recover.answer.validate', $user->ci_usuario) }}">
+        @csrf
+
+        {{-- Pregunta secreta dinámica --}}
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700">
+                {{ __('Pregunta secreta:') }}
+            </label>
+            <div class="mt-1 font-semibold text-gray-800">
+                {{ $pregunta ?? __('(no definida)') }}
+            </div>
+        </div>
+
+        {{-- Campo respuesta --}}
+        <div class="mb-4">
+            <label for="security_answer" class="block font-medium text-sm text-gray-700">
+                {{ __('Tu respuesta') }}
+            </label>
+            <input id="security_answer"
+                   name="security_answer"
+                   type="password"
+                   required
+                   class="mt-1 block w-full rounded-md bg-gray-100 border-gray-300 shadow-sm
+                          focus:border-green-500 focus:ring-green-500 px-2"/>
+            @error('security_answer')
+                <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+            @enderror
+        </div>
+
+        {{-- Botón --}}
+        <div class="flex justify-end">
+            <button type="submit"
+                    class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+                {{ __('Validar respuesta') }}
+            </button>
+        </div>
+    </form>
+</x-guest-layout>

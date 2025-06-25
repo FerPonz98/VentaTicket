@@ -67,7 +67,7 @@
 
           @if (Route::has('password.request'))
             <a
-              href="{{ route('password.request') }}"
+              href="{{ route('recover.form') }}"
               class="text-sm text-indigo-600 hover:underline"
             >
               ¿Olvidaste tu contraseña?

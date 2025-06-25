@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ——————————————
+   Override para el datepicker
+   —————————————— */
+@layer base {
+  /* color de acento en navegadores modernos */
+  input[type="date"] {
+    accent-color: #000;
+  }
+
+  /* ícono del calendario en WebKit (Chrome, Safari, Edge) */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: brightness(0) saturate(100%);
+  }
+}

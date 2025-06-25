@@ -34,7 +34,10 @@ class User extends Authenticatable
         'documento_4',
         'documento_5',
         'creado_en',
-        'password' 
+        'password' ,
+        'security_question',
+        'security_answer'
+        
     ];
     protected $hidden = [
         'password',
