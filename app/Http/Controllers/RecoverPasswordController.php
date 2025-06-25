@@ -8,11 +8,13 @@ use Illuminate\Support\Facades\Hash;
 
 class RecoverPasswordController extends Controller
 {
+ 
     public function showForm()
     {
         return view('auth.recover');
     }
 
+    
     public function check(Request $request)
     {
         $request->validate([
@@ -21,7 +23,7 @@ class RecoverPasswordController extends Controller
 
         $user = User::where('ci_usuario', $request->ci_usuario)->first();
 
-        if (!$user) {
+        if (! $user) {
             return back()->withErrors(['ci_usuario' => 'Usuario no encontrado.']);
         }
 
@@ -31,8 +33,12 @@ class RecoverPasswordController extends Controller
     public function showQuestion($ci_usuario)
     {
         $user = User::where('ci_usuario', $ci_usuario)->firstOrFail();
+        $pregunta = $user->security_question; // nombre de la columna
 
-        return view('auth.recover-question', compact('user'));
+        return view('auth.recover-question', [
+            'user'     => $user,
+            'pregunta' => $pregunta,
+        ]);
     }
 
     public function validateAnswer(Request $request, $ci_usuario)
@@ -43,35 +49,32 @@ class RecoverPasswordController extends Controller
 
         $user = User::where('ci_usuario', $ci_usuario)->firstOrFail();
 
-        if (strtolower(trim($user->security_answer)) !== strtolower(trim($request->security_answer))) {
+        if (trim($request->security_answer) !== trim($user->security_answer)) {
             return back()->withErrors(['security_answer' => 'Respuesta incorrecta.']);
         }
-        session()->put('recover_allowed_' . $ci_usuario, [
-            'granted' => true,
-            'expires_at' => now()->addMinutes(5)
-        ]);
 
+        session()->put("recover_allowed_{$ci_usuario}", [
+            'granted'    => true,
+            'expires_at' => now()->addMinutes(5),
+        ]);
 
         return view('auth.recover-reset', compact('user'));
     }
 
     public function updatePassword(Request $request, $ci_usuario)
     {
-        $sessionKey = 'recover_allowed_' . $ci_usuario;
+        $sessionKey  = "recover_allowed_{$ci_usuario}";
         $sessionData = session()->pull($sessionKey);
 
         if (
-            !$sessionData ||                                 
-            empty($sessionData['granted']) ||                
-            now()->gt($sessionData['expires_at'])          
-        ) 
-        {
-   
+            ! $sessionData ||
+            empty($sessionData['granted']) ||
+            now()->gt($sessionData['expires_at'])
+        ) {
             return redirect()->route('recover.form')
-                ->withErrors(['expired' => 'Tu sesión para cambiar contraseña ha expirado. Intenta de nuevo.']);
+                             ->withErrors(['expired' => 'Tu sesión para cambiar contraseña ha expirado. Intenta de nuevo.']);
         }
 
-   
         $request->validate([
             'password' => 'required|string|min:6|confirmed',
         ]);
@@ -80,9 +83,7 @@ class RecoverPasswordController extends Controller
         $user->password = Hash::make($request->password);
         $user->save();
 
-        return redirect()->route('login')->with('status', 'Contraseña actualizada con éxito.');
+        return redirect()->route('login')
+                         ->with('status', 'Contraseña actualizada con éxito.');
     }
-
 }
-
-

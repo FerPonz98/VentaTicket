@@ -6,15 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateBusesTable extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up()
     {
         Schema::create('buses', function (Blueprint $table) {
             $table->id();
 
             $table->string('codigo')->unique();
-            $table->string('tipo_de_bus');                // e.g. "1PISO"
+            $table->string('tipo_de_bus');                // 'Un piso' o 'Doble piso'
             $table->boolean('aire_acondicionado')->default(false);
-            $table->integer('asientos');
+
+            $table->integer('asientos_piso1')->default(0);
+            $table->integer('asientos_piso2')->default(0);
+
+            $table->string('tipo_asiento', 20);
+
             $table->boolean('tv')->default(false);
             $table->boolean('bano')->default(false);
             $table->boolean('carga_telefono')->default(false);
@@ -35,6 +43,7 @@ class CreateBusesTable extends Migration
             $table->timestamps();
         });
     }
+
 
     public function down()
     {

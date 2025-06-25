@@ -21,13 +21,15 @@ use App\Http\Controllers\ViajeController;
 Route::redirect('/', '/login');
 
 Route::get('/recover', [RecoverPasswordController::class, 'showForm'])->name('recover.form');
+Route::post('/recover/check', [RecoverPasswordController::class, 'check'])->name('recover.check');
 Route::get('/recover/question/{ci_usuario}', [RecoverPasswordController::class, 'showQuestion'])->name('recover.question');
 Route::post('/recover/validate-answer/{ci_usuario}', [RecoverPasswordController::class, 'validateAnswer'])->name('recover.answer.validate');
-Route::post('/recover/check', [RecoverPasswordController::class, 'check'])->name('recover.check');
+Route::get('/recover/reset/{ci_usuario}', [RecoverPasswordController::class, 'showResetForm'])->name('recover.reset.form');
 Route::post('/recover/reset/{ci_usuario}', [RecoverPasswordController::class, 'updatePassword'])->name('recover.reset.submit');
+
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 
 Route::middleware(['auth','rol:admin'])->group(function(){
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
@@ -42,8 +44,8 @@ Route::middleware(['auth','rol:cajero'])->group(function(){
 });
 
 Route::middleware(['auth','rol:chofer y ayudante'])->group(function(){
-    Route::get('/chofer',    [ChoferController::class, 'index'])->name('chofer.dashboard');
-    Route::get('/ayudante',  [AyudanteController::class, 'index'])->name('ayudante.dashboard');
+    Route::get('/chofer', [ChoferController::class, 'index'])->name('chofer.dashboard');
+    Route::get('/ayudante', [AyudanteController::class, 'index'])->name('ayudante.dashboard');
 });
 
 Route::middleware('auth')->group(function(){
@@ -57,13 +59,16 @@ Route::middleware(['auth','rol:admin,supervisor gral'])->group(function(){
 });
 
 Route::middleware(['auth','rol:admin,supervisor gral,cajero'])->resource('pasajes', PasajeController::class);
+
 Route::middleware(['auth','rol:admin,supervisor gral,carga'])->resource('carga', CargaController::class);
+
 Route::middleware(['auth','rol:admin,supervisor gral,encomienda'])->resource('encomiendas', EncomiendaController::class);
+
 Route::middleware(['auth','rol:chofer y ayudante'])->resource('kardex', KardexController::class);
 
 Route::middleware(['auth','rol:admin'])->group(function(){
-    Route::resource('buses',    BusController::class);
-    Route::resource('rutas',    RutaController::class);
-    Route::resource('viajes',   ViajeController::class);
-    Route::resource('choferes', ChoferController::class);
+    Route::resource('buses', BusController::class)->parameters(['buses' => 'bus']);
+    Route::resource('rutas', RutaController::class)->parameters(['rutas' => 'ruta']);
+    Route::resource('viajes', ViajeController::class)->parameters(['viajes' => 'viaje']);
+    Route::resource('choferes', ChoferController::class)->parameters(['choferes' => 'chofer']);
 });

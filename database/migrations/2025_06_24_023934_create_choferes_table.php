@@ -10,13 +10,11 @@ class CreateChoferesTable extends Migration
     {
         Schema::create('choferes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('bus_id')
-                  ->constrained('buses')
-                  ->onDelete('cascade');
+            $table->integer('numero');
+            $table->string('bus_codigo', 10);
             $table->string('nombre_chofer');
             $table->string('licencia');
             $table->date('vencimiento_licencia');
-            $table->string('nombre_ayudante')->nullable();
             $table->timestamps();
         });
     }

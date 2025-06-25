@@ -9,24 +9,48 @@ class Bus extends Model
 {
     use HasFactory;
 
+    protected $table = 'buses';
+
+    protected $attributes = [
+        'asientos_piso1' => 0,
+        'asientos_piso2' => 0,
+    ];
+
     protected $fillable = [
         'codigo',
+        'placa',
         'tipo_de_bus',
+        'asientos_piso1',
+        'asientos_piso2',
+        'tipo_asiento',
         'aire_acondicionado',
-        'asientos',
         'tv',
         'bano',
         'carga_telefono',
-        'placa',
-        'marca',
-        'modelo',
-        'propietario',
         'soat',
         'codigo_soat',
         'soat_vencimiento',
         'rev_tecnica',
         'rev_tecnica_vencimiento',
         'tarjeta_operacion_vencimiento',
+        'marca',
+        'modelo',
+        'propietario',
+        'chofer_id',
+    ];
+
+    protected $casts = [
+        'asientos_piso1' => 'integer',
+        'asientos_piso2' => 'integer',
+        'aire_acondicionado' => 'boolean',
+        'tv'                => 'boolean',
+        'bano'              => 'boolean',
+        'carga_telefono'    => 'boolean',
+        'soat'              => 'boolean',
+        'rev_tecnica'       => 'boolean',
+        'soat_vencimiento'  => 'date',
+        'rev_tecnica_vencimiento' => 'date',
+        'tarjeta_operacion_vencimiento' => 'date',
     ];
 
     public function viajes()
@@ -34,8 +58,8 @@ class Bus extends Model
         return $this->hasMany(Viaje::class);
     }
 
-    public function choferes()
+    public function chofer()
     {
-        return $this->hasMany(Chofer::class);
+        return $this->belongsTo(Chofer::class);
     }
 }

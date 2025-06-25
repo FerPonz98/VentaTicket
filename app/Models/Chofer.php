@@ -10,11 +10,14 @@ class Chofer extends Model
     use HasFactory;
     protected $table = 'choferes';
     protected $fillable = [
-        'bus_id',
+        'numero',
+        'bus_codigo',
         'nombre_chofer',
         'licencia',
-        'licencia_vencimiento',
-        'nombre_ayudante',
+        'vencimiento_licencia',
+    ];
+    protected $casts = [
+        'vencimiento_licencia' => 'date',
     ];
 
     public function bus()

@@ -49,10 +49,7 @@
           <tr>
             <td colspan="5" class="px-6 py-4 text-center text-gray-600">
               No hay viajes registrados.
-              <a href="{{ route('viajes.create') }}"
-                 class="text-indigo-600 hover:text-indigo-800 font-medium">
-                Crea uno ahora
-              </a>.
+
             </td>
           </tr>
         @endforelse

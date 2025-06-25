@@ -23,14 +23,25 @@ return new class extends Migration {
             $table->string('email', 100)->nullable();
             $table->string('celular', 45)->nullable();
             $table->text('referencias')->nullable();
-            $table->enum('rol', ['admin', 'supervisor', 'cajero', 'chofer', 'ayudante'])->nullable();
+            $table->enum('rol', [
+                'admin',
+                'supervisor gral',
+                'supervisor suc',
+                'cajero',
+                'chofer y ayudante',
+                'carga',
+                'ventas qr',
+                'encomienda'       
+            ])->nullable();
+            $table->string('security_question', 255)->nullable();
+            $table->string('security_answer', 255)->nullable();
             $table->string('documento_1', 255)->nullable();
             $table->string('documento_2', 255)->nullable();
             $table->string('documento_3', 255)->nullable();
             $table->string('documento_4', 255)->nullable();
             $table->string('documento_5', 255)->nullable();
             $table->timestamp('creado_en')->useCurrent();
-            $table->timestamps(); // created_at y updated_at
+            $table->timestamps(); 
         });
     }
 

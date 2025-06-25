@@ -1,3 +1,4 @@
+{{-- resources/views/layouts/app.blade.php --}}
 <!DOCTYPE html>
 <html lang="es" class="h-full bg-gray-100">
 <head>
@@ -15,6 +16,7 @@
     <nav class="flex-1 overflow-y-auto">
       <ul class="space-y-1 px-4">
         <li><a href="{{ route('dashboard') }}" class="block px-3 py-2 rounded hover:bg-gray-700">Dashboard</a></li>
+
         @auth
           @if(in_array(Auth::user()->rol, ['admin','supervisor gral','supervisor suc']))
             <li><a href="{{ route('users.index') }}" class="block px-3 py-2 rounded hover:bg-gray-700">Usuarios</a></li>
@@ -31,7 +33,9 @@
           @if(Auth::user()->rol === 'chofer y ayudante')
             <li><a href="{{ route('kardex.index') }}" class="block px-3 py-2 rounded hover:bg-gray-700">Kardex</a></li>
           @endif
+
           @if(in_array(Auth::user()->rol, ['admin','supervisor gral']))
+            {{-- Buses --}}
             <li x-data="{ open: false }" class="group">
               <button @click="open = !open" class="w-full flex justify-between items-center px-3 py-2 rounded hover:bg-gray-700">
                 <span>Buses</span>
@@ -44,6 +48,7 @@
                 <li><a href="{{ route('buses.create') }}" class="block px-2 py-1 rounded hover:bg-gray-700">Crear Bus</a></li>
               </ul>
             </li>
+            {{-- Rutas --}}
             <li x-data="{ open: false }" class="group">
               <button @click="open = !open" class="w-full flex justify-between items-center px-3 py-2 rounded hover:bg-gray-700">
                 <span>Rutas</span>
@@ -56,6 +61,7 @@
                 <li><a href="{{ route('rutas.create') }}" class="block px-2 py-1 rounded hover:bg-gray-700">Crear Ruta</a></li>
               </ul>
             </li>
+            {{-- Viajes --}}
             <li x-data="{ open: false }" class="group">
               <button @click="open = !open" class="w-full flex justify-between items-center px-3 py-2 rounded hover:bg-gray-700">
                 <span>Viajes</span>
@@ -68,6 +74,7 @@
                 <li><a href="{{ route('viajes.create') }}" class="block px-2 py-1 rounded hover:bg-gray-700">Crear Viaje</a></li>
               </ul>
             </li>
+            {{-- Choferes --}}
             <li x-data="{ open: false }" class="group">
               <button @click="open = !open" class="w-full flex justify-between items-center px-3 py-2 rounded hover:bg-gray-700">
                 <span>Choferes</span>
@@ -84,6 +91,7 @@
         @endauth
       </ul>
     </nav>
+
     <div class="p-4 border-t border-gray-700">
       <div class="flex items-center space-x-3">
         @if(Auth::user()->foto)
@@ -104,12 +112,15 @@
       </div>
     </div>
   </aside>
+
   <div class="flex-1 flex flex-col overflow-hidden">
     <header class="bg-white shadow px-6 py-4 flex items-center justify-between">
       <h1 class="text-2xl font-semibold text-gray-800">@yield('title')</h1>
       @yield('breadcrumbs')
     </header>
+
     <main class="flex-1 overflow-auto p-6">
+      {{-- Aquí se inyecta el contenido de cada vista --}}
       @yield('content')
     </main>
   </div>

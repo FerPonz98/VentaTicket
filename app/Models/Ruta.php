@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,23 +10,31 @@ class Ruta extends Model
 
     protected $table = 'rutas';
 
+    // Añade aquí todos los campos que tengas en tu tabla rutas
     protected $fillable = [
         'origen',
         'destino',
         'hora_salida',
-        'precio_bus_normal',
-        'recargo_bus_doble_piso',
-        'recargo_bus_1piso_ac',
-        'recargo_semicama',
+        'precio_base',
+        'recargo_doble_semicama',
+        'recargo_un_piso_semicama',
         'descuento_3ra_edad',
         'precio_cortesia',
-        'descuento_discapacidad',
-        'descuento_2',
-        'descuento_3',
+        'precio_discapacidad',
+        'descuento2',
+        'descuento3',
     ];
 
-    public function viajes()
+    protected $casts = [
+        'hora_salida' => 'datetime:H:i',
+    ];
+
+    public function stops()
     {
-        return $this->hasMany(Viaje::class);
+        return $this->belongsToMany(Stop::class, 'route_stop')
+            // sólo estos tres campos del pivot
+            ->withPivot(['sequence','departure_time','precio_parada'])
+            ->orderBy('pivot_sequence')
+            ->withTimestamps();
     }
 }

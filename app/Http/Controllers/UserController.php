@@ -50,8 +50,8 @@ class UserController extends Controller
         $sexo = $request->sexo === 'masculino' ? 'M' : 'F';
 
         // Almacenamiento de archivos
-        $foto = $request->hasFile('foto') 
-            ? $request->file('foto')->store('fotos', 'public') 
+        $foto = $request->hasFile('foto')
+            ? $request->file('foto')->store('fotos', 'public')
             : null;
 
         $docs = [];
@@ -133,38 +133,52 @@ class UserController extends Controller
 
         $usuario = User::findOrFail($ci_usuario);
 
-        // Mapeo de sexo
         $sexo = $request->sexo === 'masculino' ? 'M' : 'F';
 
-        $usuario->update([
-            'nombre_usuario'    => $request->nombre_usuario,
-            'apellidos'         => $request->apellidos,
-            'sexo'              => $sexo,
-            'fecha_nacimiento'  => $request->fecha_nacimiento,
-            'estado'            => $request->estado,
-            'estado_civil'      => $request->estado_civil,
-            'lugar_residencia'  => $request->lugar_residencia,
-            'domicilio'         => $request->domicilio,
-            'email'             => $request->email,
-            'celular'           => $request->celular,
-            'referencias'       => $request->referencias,
-            'rol'               => $request->rol,
-            'security_question' => $request->security_question,
-            'security_answer'   => $request->security_answer,
-        ]);
 
-        // Foto
+        if ($request->boolean('remove_foto') && $usuario->foto) {
+            Storage::disk('public')->delete($usuario->foto);
+            $usuario->foto = null;
+        }
+  
         if ($request->hasFile('foto')) {
+            if ($usuario->foto) {
+                Storage::disk('public')->delete($usuario->foto);
+            }
             $usuario->foto = $request->file('foto')->store('fotos', 'public');
         }
-        // Documentos
+
         for ($i = 1; $i <= 5; $i++) {
-            $field = "documento_$i";
+            $field      = "documento_$i";
+            $removeName = "remove_documento_{$i}";
+
+            if ($request->boolean($removeName) && $usuario->$field) {
+                Storage::disk('public')->delete($usuario->$field);
+                $usuario->$field = null;
+            }
             if ($request->hasFile($field)) {
+                if ($usuario->$field) {
+                    Storage::disk('public')->delete($usuario->$field);
+                }
                 $usuario->$field = $request->file($field)->store('documentos', 'public');
             }
         }
-        // Contraseña
+
+        $usuario->nombre_usuario    = $request->nombre_usuario;
+        $usuario->apellidos         = $request->apellidos;
+        $usuario->sexo              = $sexo;
+        $usuario->fecha_nacimiento  = $request->fecha_nacimiento;
+        $usuario->estado            = $request->estado;
+        $usuario->estado_civil      = $request->estado_civil;
+        $usuario->lugar_residencia  = $request->lugar_residencia;
+        $usuario->domicilio         = $request->domicilio;
+        $usuario->email             = $request->email;
+        $usuario->celular           = $request->celular;
+        $usuario->referencias       = $request->referencias;
+        $usuario->rol               = $request->rol;
+        $usuario->security_question = $request->security_question;
+        $usuario->security_answer   = $request->security_answer;
+
         if ($request->filled('password')) {
             $usuario->password = bcrypt($request->password);
         }
@@ -178,6 +192,16 @@ class UserController extends Controller
     public function destroy($ci_usuario)
     {
         $usuario = User::findOrFail($ci_usuario);
+        if ($usuario->foto) {
+            Storage::disk('public')->delete($usuario->foto);
+        }
+        for ($i = 1; $i <= 5; $i++) {
+            $field = "documento_$i";
+            if ($usuario->$field) {
+                Storage::disk('public')->delete($usuario->$field);
+            }
+        }
+
         $usuario->delete();
 
         return redirect()->route('users.index')

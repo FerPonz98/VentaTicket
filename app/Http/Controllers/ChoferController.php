@@ -1,60 +1,73 @@
 <?php
-// app/Http/Controllers/ChoferController.php
+
 namespace App\Http\Controllers;
 
 use App\Models\Chofer;
-use App\Models\Bus;
 use Illuminate\Http\Request;
 
 class ChoferController extends Controller
 {
     public function index()
     {
-        $choferes = Chofer::with('bus')->get();
+        $choferes = Chofer::all();
         return view('choferes.index', compact('choferes'));
     }
 
     public function create()
     {
-        $buses = Bus::pluck('codigo','id');
-        return view('choferes.create', compact('buses'));
+        return view('choferes.create');
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
-            'bus_id'               => 'required|exists:buses,id',
-            'nombre_chofer'        => 'required|string|max:100',
+            'numero'               => 'required|integer',
+            'bus_codigo'           => 'required|string|max:10',
+            'nombre_chofer'        => 'required|string|max:255',
             'licencia'             => 'required|string|max:50',
             'vencimiento_licencia' => 'required|date',
-            'nombre_ayudante'      => 'nullable|string|max:100',
         ]);
+    
         Chofer::create($data);
-        return redirect()->route('choferes.index')->with('success','Chofer creado.');
+
+        return redirect()
+            ->route('choferes.index')
+            ->with('success', 'Chofer creado correctamente.');
+    }
+
+    public function show(Chofer $chofer)
+    {
+        return view('choferes.show', compact('chofer'));
     }
 
     public function edit(Chofer $chofer)
     {
-        $buses = Bus::pluck('codigo','id');
-        return view('choferes.edit', compact('chofer','buses'));
+        return view('choferes.edit', compact('chofer'));
     }
 
     public function update(Request $request, Chofer $chofer)
     {
         $data = $request->validate([
-            'bus_id'               => 'required|exists:buses,id',
-            'nombre_chofer'        => 'required|string|max:100',
+            'numero'               => 'required|integer',
+            'bus_codigo'           => 'required|string|max:10',
+            'nombre_chofer'        => 'required|string|max:255',
             'licencia'             => 'required|string|max:50',
             'vencimiento_licencia' => 'required|date',
-            'nombre_ayudante'      => 'nullable|string|max:100',
         ]);
+
         $chofer->update($data);
-        return redirect()->route('choferes.index')->with('success','Chofer actualizado.');
+
+        return redirect()
+            ->route('choferes.index')
+            ->with('success', 'Chofer actualizado correctamente.');
     }
 
     public function destroy(Chofer $chofer)
     {
         $chofer->delete();
-        return redirect()->route('choferes.index')->with('success','Chofer eliminado.');
+
+        return redirect()
+            ->route('choferes.index')
+            ->with('success', 'Chofer eliminado correctamente.');
     }
 }
