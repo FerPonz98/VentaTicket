@@ -33,6 +33,7 @@ return new class extends Migration {
                 'ventas qr',
                 'encomienda'       
             ])->nullable();
+            $table->string('sucursal', 255)->nullable();
             $table->string('security_question', 255)->nullable();
             $table->string('security_answer', 255)->nullable();
             $table->string('documento_1', 255)->nullable();

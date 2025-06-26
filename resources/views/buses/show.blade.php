@@ -4,7 +4,6 @@
 @section('title','Detalles del Bus')
 
 @section('content')
-  {{-- Volver al listado --}}
   <a href="{{ route('buses.index') }}"
      class="inline-flex items-center text-indigo-600 hover:text-indigo-800 mb-6">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -17,33 +16,45 @@
     <h2 class="text-3xl font-bold text-gray-900 mb-8">
       Detalles del Bus <span class="text-indigo-600">{{ $bus->codigo }}</span>
     </h2>
-
+    
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      {{-- Propietario --}}
+      <div class="space-y-2">
+        <p class="text-sm font-medium text-gray-700">Propietario</p>
+        <p class="text-lg text-gray-900">{{ $bus->propietario ?? '—' }}</p>
+      </div>
+
+      {{-- Placa --}}
       <div class="space-y-2">
         <p class="text-sm font-medium text-gray-700">Placa</p>
         <p class="text-lg text-gray-900">{{ $bus->placa }}</p>
       </div>
 
+      {{-- Tipo de Bus --}}
       <div class="space-y-2">
         <p class="text-sm font-medium text-gray-700">Tipo de Bus</p>
         <p class="text-lg text-gray-900">{{ $bus->tipo_de_bus }}</p>
       </div>
 
+      {{-- Tipo de Asiento (ahora segunda columna, misma fila que Tipo de Bus) --}}
+      <div class="space-y-2">
+        <p class="text-sm font-medium text-gray-700">Tipo de Asiento</p>
+        <p class="text-lg text-gray-900">{{ $bus->tipo_asiento }}</p>
+      </div>
+
+      {{-- Asientos Piso 1 --}}
       <div class="space-y-2">
         <p class="text-sm font-medium text-gray-700">Asientos Piso 1</p>
         <p class="text-lg text-gray-900">{{ $bus->asientos_piso1 }}</p>
       </div>
 
+      {{-- Asientos Piso 2 (misma fila que Piso 1) --}}
       <div class="space-y-2">
         <p class="text-sm font-medium text-gray-700">Asientos Piso 2</p>
         <p class="text-lg text-gray-900">{{ $bus->asientos_piso2 }}</p>
       </div>
 
-      <div class="space-y-2 col-span-full">
-        <p class="text-sm font-medium text-gray-700">Tipo de Asiento</p>
-        <p class="text-lg text-gray-900">{{ $bus->tipo_asiento }}</p>
-      </div>
-
+      {{-- Características --}}
       <div class="space-y-2 col-span-full">
         <p class="text-sm font-medium text-gray-700">Características</p>
         <p class="text-lg text-gray-900">
@@ -54,6 +65,7 @@
         </p>
       </div>
 
+      {{-- SOAT --}}
       <div class="space-y-2">
         <p class="text-sm font-medium text-gray-700">SOAT</p>
         <p class="text-lg text-gray-900">
@@ -66,6 +78,7 @@
         </p>
       </div>
 
+      {{-- Revisión Técnica --}}
       <div class="space-y-2">
         <p class="text-sm font-medium text-gray-700">Revisión Técnica</p>
         <p class="text-lg text-gray-900">
@@ -77,6 +90,7 @@
         </p>
       </div>
 
+      {{-- Tarjeta de Operación --}}
       <div class="space-y-2">
         <p class="text-sm font-medium text-gray-700">Tarjeta de Operación</p>
         <p class="text-lg text-gray-900">
@@ -86,19 +100,27 @@
         </p>
       </div>
 
+      {{-- Marca --}}
       <div class="space-y-2">
         <p class="text-sm font-medium text-gray-700">Marca</p>
         <p class="text-lg text-gray-900">{{ $bus->marca }}</p>
       </div>
 
+      {{-- Modelo --}}
       <div class="space-y-2">
         <p class="text-sm font-medium text-gray-700">Modelo</p>
         <p class="text-lg text-gray-900">{{ $bus->modelo ?? '—' }}</p>
       </div>
 
+      {{-- Chofer Principal --}}
       <div class="space-y-2">
-        <p class="text-sm font-medium text-gray-700">Chofer</p>
+        <p class="text-sm font-medium text-gray-700">Chofer Principal</p>
         <p class="text-lg text-gray-900">{{ optional($bus->chofer)->nombre_chofer ?? '—' }}</p>
+      </div>
+      {{-- Chofer secundario --}}
+      <div class="space-y-2">
+        <p class="text-sm font-medium text-gray-700">Chofer secundario</p>
+        <p class="text-lg text-gray-900">{{ optional($bus->chofer2)->nombre_chofer ?? '—' }}</p>
       </div>
     </div>
   </div>

@@ -8,6 +8,6 @@ class SupervisorController extends Controller
 {
     public function index()
     {
-        return view('supervisor.dashboard');
+        return view('lobby');
     }
 }

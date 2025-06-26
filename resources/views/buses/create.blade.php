@@ -39,7 +39,19 @@
           class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-gray-900"
         />
       </div>
-
+      {{-- Placa --}}
+      <div>
+        <label for="placa" class="block mb-1 text-gray-700 font-medium">Placa*</label>
+        <input
+          id="placa"
+          name="placa"
+          type="text"
+          value="{{ old('placa') }}"
+          placeholder="p.ej. B123"
+          required
+          class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-gray-900"
+        />
+      </div>
       {{-- Tipo de bus --}}
       <div>
         <label for="tipo_de_bus" class="block mb-1 text-gray-700 font-medium">Tipo de Bus*</label>
@@ -119,63 +131,106 @@
           <span class="text-gray-700">Carga de Teléfono</span>
         </label>
         <label class="inline-flex items-center">
-          <input type="checkbox" name="soat" value="1" {{ old('soat') ? 'checked' : '' }} class="form-checkbox mr-2" />
-          <span class="text-gray-700">SOAT</span>
-        </label>
-        <label class="inline-flex items-center">
           <input type="checkbox" name="rev_tecnica" value="1" {{ old('rev_tecnica') ? 'checked' : '' }} class="form-checkbox mr-2" />
           <span class="text-gray-700">Revisión Técnica</span>
         </label>
+        <label class="inline-flex items-center">
+          <input type="checkbox" name="soat" value="1" {{ old('soat') ? 'checked' : '' }} class="form-checkbox mr-2" />
+          <span class="text-gray-700">SOAT</span>
+        </label>
       </div>
-
-      {{-- Placa --}}
-      <div>
-        <label for="placa" class="block mb-1 text-gray-700 font-medium">Placa*</label>
+  
+      {{-- Vencimientos --}}
+      <div class="sm:col-span-2">
+        <label for="tarjeta_operacion_vencimiento" class="block mb-1 text-gray-700 font-medium">Venc. Tarjeta Operación</label>
         <input
-          id="placa"
-          name="placa"
+          type="date"
+          id="tarjeta_operacion_vencimiento"
+          name="tarjeta_operacion_vencimiento"
+          value="{{ old('tarjeta_operacion_vencimiento') }}"
+          class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-gray-900"
+        />
+        @error('tarjeta_operacion_vencimiento')
+          <p class="mt-1 text-red-600 text-sm">{{ $message }}</p>
+        @enderror
+      </div>  
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {{-- Marca --}}
+        <div>
+          <label for="marca" class="block mb-1 text-gray-700 font-medium">Marca*</label>
+          <input
+            id="marca"
+            name="marca"
+            type="text"
+            value="{{ old('marca') }}"
+            placeholder="p.ej. Mercedes"
+            required
+            class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-gray-900"
+          />
+        </div>
+
+        {{-- Modelo --}}
+        <div>
+          <label for="modelo" class="block mb-1 text-gray-700 font-medium">Modelo</label>
+          <input
+            id="modelo"
+            name="modelo"
+            type="text"
+            value="{{ old('modelo') }}"
+            placeholder="p.ej. Sprinter 2020"
+            class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-gray-900"
+          />
+        </div>
+      </div>
+      {{-- Codigo Soat --}}
+      <div>
+        <label for="codigo_soat" class="block mb-1 text-gray-700 font-medium">Código SOAT</label>
+        <input
+          id="codigo_soat"
+          name="codigo_soat"
           type="text"
-          value="{{ old('placa') }}"
-          placeholder="p.ej. ABC-123"
-          required
+          value="{{ old('codigo_soat') }}"
+          placeholder="p.ej. ABC123"
+          class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-gray-900"
+        />
+      </div>
+      {{-- Propietario --}}
+      <div>
+        <label for="propietario" class="block mb-1 text-gray-700 font-medium">Propietario</label>
+        <input
+          id="propietario"
+          name="propietario"
+          type="text"
+          value="{{ old('propietario') }}"
+          placeholder="p.ej. Juan Pérez"
           class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-gray-900"
         />
       </div>
 
-      {{-- Marca --}}
+      {{-- Chofer Principal --}}
       <div>
-        <label for="marca" class="block mb-1 text-gray-700 font-medium">Marca*</label>
-        <input
-          id="marca"
-          name="marca"
-          type="text"
-          value="{{ old('marca') }}"
-          placeholder="p.ej. Mercedes"
-          required
-          class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-gray-900"
-        />
-      </div>
-
-      {{-- Modelo --}}
-      <div>
-        <label for="modelo" class="block mb-1 text-gray-700 font-medium">Modelo</label>
-        <input
-          id="modelo"
-          name="modelo"
-          type="text"
-          value="{{ old('modelo') }}"
-          placeholder="p.ej. Sprinter 2020"
-          class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-gray-900"
-        />
-      </div>
-
-      {{-- Chofer --}}
-      <div>
-        <label for="chofer_id" class="block mb-1 text-gray-700 font-medium">Chofer*</label>
+        <label for="chofer_id" class="block mb-1 text-gray-700 font-medium">Chofer Principal*</label>
         <select
           id="chofer_id"
           name="chofer_id"
           required
+          class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-gray-900"
+        >
+          <option value="">-- Seleccione Chofer --</option>
+          @foreach($choferes as $chofer)
+            <option value="{{ $chofer->id }}" {{ old('chofer_id') == $chofer->id ? 'selected' : '' }}>
+              {{ $chofer->nombre_chofer }}
+            </option>
+          @endforeach
+        </select>
+      </div>
+      {{-- Chofer secundario (opcional) --}}
+      <div>
+        <label for="chofer2_id" class="block mb-1 text-gray-700 font-medium">Chofer Secundario (opcional)</label>
+        <select
+          id="chofer2_id"
+          name="chofer2_id"
           class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-gray-900"
         >
           <option value="">-- Seleccione Chofer --</option>
@@ -212,4 +267,27 @@
       toggleAsientos2();
     });
   </script>
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const primary = document.getElementById('chofer_id');
+    const secondary = document.getElementById('chofer2_id');
+
+    function syncSecondary() {
+      const selected = primary.value;
+  
+      Array.from(secondary.options).forEach(opt => {
+    
+        opt.disabled = (opt.value === selected);
+      });
+
+      if (secondary.value === selected) {
+        secondary.value = '';
+      }
+    }
+
+    primary.addEventListener('change', syncSecondary);
+    syncSecondary();
+  });
+</script>
+
 @endsection

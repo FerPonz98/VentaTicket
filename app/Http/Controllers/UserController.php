@@ -31,7 +31,7 @@ class UserController extends Controller
             'estado_civil'     => 'required',
             'lugar_residencia' => 'required|string',
             'domicilio'        => 'required|string',
-            'email'            => 'required|email|unique:usuarios,email',
+            'email'            => 'nullable|email|unique:usuarios,email',
             'celular'          => 'nullable|string|max:20',
             'referencias'      => 'nullable|string',
             'rol'              => 'required|string',
@@ -115,7 +115,7 @@ class UserController extends Controller
             'estado_civil'     => 'required',
             'lugar_residencia' => 'required|string',
             'domicilio'        => 'required|string',
-            'email'            => 'required|email|unique:usuarios,email,' 
+            'email'            => 'nullable|email|unique:usuarios,email,' 
                                    . $ci_usuario . ',ci_usuario',
             'celular'          => 'nullable|string|max:20',
             'referencias'      => 'nullable|string',

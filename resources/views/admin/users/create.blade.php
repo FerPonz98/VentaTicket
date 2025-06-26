@@ -4,11 +4,15 @@
 @section('title', 'Registrar Nuevo Usuario')
 
 @section('content')
-<div class="container mx-auto p-6">
-  <a href="{{ route('users.index') }}"
-     class="inline-block mb-4 text-sm text-blue-600 hover:underline">
-    ← Volver al listado
-  </a>
+
+<div class="container mx-auto p-7">
+
+  <div class="mb-6">
+    <a href="{{ route('users.index') }}"
+       class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+      ← Volver al listado
+    </a>
+  </div>
 
   <div class="bg-white shadow-lg rounded-lg p-6">
     <h2 class="text-2xl font-bold mb-6 text-black">
@@ -115,7 +119,7 @@
         <div>
           <label class="block font-semibold mb-1">Correo Electrónico</label>
           <input type="email" name="email" value="{{ old('email') }}"
-                 class="w-full bg-gray-100 border rounded px-3 py-2" required>
+                 class="w-full bg-gray-100 border rounded px-3 py-2" >
           @error('email') <p class="text-red-600 text-sm mt-1">{{ $message }}</p> @enderror
         </div>
 
@@ -147,9 +151,16 @@
             <option value="ventas qr"       {{ old('rol')=='ventas qr'       ?'selected':'' }}>Ventas QR</option>
             <option value="carga"           {{ old('rol')=='carga'           ?'selected':'' }}>Carga</option>
             <option value="encomienda"      {{ old('rol')=='encomienda'      ?'selected':'' }}>Encomienda</option>
-            <option value="chofer y ayudante" {{ old('rol')=='chofer y ayudante' ?'selected':'' }}>Chofer y Ayudante</option>
+            <option value="chofer y ayudante" {{ old('rol')=='chofer y ayudante' ?'selected':'' }}>Chofer o Ayudante</option>
           </select>
           @error('rol') <p class="text-red-600 text-sm mt-1">{{ $message }}</p> @enderror
+        </div>
+        {{-- Sucursal --}}
+        <div>
+          <label class="block font-semibold mb-1">Sucursal</label>
+          <input type="text" name="sucursal" value="{{ old('sucursal') }}"
+                 class="w-full bg-gray-100 border rounded px-3 py-2" required>
+          @error('sucursal') <p class="text-red-600 text-sm mt-1">{{ $message }}</p> @enderror
         </div>
 
         {{-- Contraseña --}}

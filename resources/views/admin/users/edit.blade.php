@@ -4,11 +4,14 @@
 @section('title', 'Editar Usuario')
 
 @section('content')
-<div class="container mx-auto mt-6">
-  <a href="{{ route('users.index') }}"
-     class="inline-block mb-4 text-sm text-gray-900 hover:underline">
-    ← Volver al listado
-  </a>
+<div class="container mx-auto p-7">
+
+  <div class="mb-6">
+    <a href="{{ route('users.index') }}"
+       class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+      ← Volver al listado
+    </a>
+  </div>
 
   <div class="bg-white shadow rounded-lg p-6">
     <h2 class="text-2xl font-semibold mb-6 text-gray-900">
@@ -53,9 +56,9 @@
         <div>
           <label class="block font-medium mb-1">Sexo</label>
           <select name="sexo" class="w-full bg-gray-100 border rounded px-3 py-2" required>
-            <option value="">-- Seleccione --</option>
-            <option value="masculino" {{ old('sexo')=='masculino'?'selected':'' }}>Masculino</option>
-            <option value="femenino"  {{ old('sexo')=='femenino' ?'selected':'' }}>Femenino</option>
+             
+              <option value="masculino" {{ old('sexo', $usuario->sexo)=='masculino'?'selected':'' }}>Masculino</option>
+              <option value="femenino"  {{ old('sexo', $usuario->sexo)=='femenino' ?'selected':'' }}>Femenino</option>
           </select>
           @error('sexo') <p class="text-red-600 text-sm mt-1">{{ $message }}</p> @enderror
         </div>
@@ -161,6 +164,14 @@
             @endforeach
           </select>
           @error('rol') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+        </div>
+        {{-- Sucursal --}}
+        <div>
+          <label class="block font-medium mb-1">Sucursal</label>
+          <input name="sucursal"
+                 value="{{ old('sucursal', $usuario->sucursal) }}"
+                 class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2"/>
+          @error('sucursal') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
         </div>
 
         {{-- Foto de Perfil --}}

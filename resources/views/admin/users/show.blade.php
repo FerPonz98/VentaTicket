@@ -4,10 +4,9 @@
 @section('title', 'Detalle de Usuario')
 
 @section('content')
-<div class="container mx-auto p-6">
+<div class="container mx-auto p-7">
 
-  {{-- Botón Volver --}}
-  <div class="flex justify-end mb-4">
+  <div class="mb-6">
     <a href="{{ route('users.index') }}"
        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
       ← Volver al listado
@@ -57,8 +56,10 @@
       <dl class="space-y-4 text-black">
         @php
           $fields = [
+            'Estado'        => $usuario->Estado === 'activo' ? 'Activo' : 'Bloqueado',
             'CI'           => $usuario->ci_usuario,
             'Rol'          => ucfirst($usuario->rol),
+            'Sucursal'    => ucfirst($usuario->sucursal),
             'Email'        => $usuario->email,
             'Sexo'         => $usuario->sexo === 'M' ? 'Masculino' : 'Femenino',
             'Nacimiento'   => $usuario->fecha_nacimiento,

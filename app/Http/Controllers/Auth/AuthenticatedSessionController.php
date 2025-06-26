@@ -15,23 +15,50 @@ class AuthenticatedSessionController extends Controller
         return view('auth.login');
     }
 
-public function store(LoginRequest $request): RedirectResponse
-{
-    $request->authenticate();
-    $request->session()->regenerate();
+    public function store(LoginRequest $request): RedirectResponse
+    {
+      
+        $request->authenticate();
+        $request->session()->regenerate();
 
-    // Redirección según rol
-    $user = $request->user();
-    return match($user->rol) {
-      'admin'      => redirect()->intended('/admin'),
-      'supervisor' => redirect()->intended('/supervisor'),
-      'cajero'     => redirect()->intended('/cajero'),
-      'chofer'     => redirect()->intended('/chofer'),
-      'ayudante'   => redirect()->intended('/ayudante'),
-      default      => redirect()->intended('/dashboard'),
-    };
-}
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
+      
+        if ($user->estado === 'inactivo') {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()
+                ->withInput($request->only('ci_usuario'))
+                ->withErrors(['ci_usuario' => 'Tu cuenta no está activa.']);
+        }
+
+      
+        if ($user->rol !== 'admin' && $user->created_at->diffInDays(now()) > 80) {
+            $user->estado = 'bloqueado';
+            $user->save();
+
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()
+                ->withInput($request->only('ci_usuario'))
+                ->withErrors(['ci_usuario' => 'Tu cuenta ha sido bloqueada tras 80 días de uso.']);
+        }
+
+   
+
+        return match ($user->rol) {
+            'admin'             => redirect()->intended('/admin'),
+            'supervisor gral'   => redirect()->intended('/supervisor'),
+            'cajero'            => redirect()->intended('/cajero'),
+            'chofer y ayudante' => redirect()->intended('/chofer'),
+            default             => redirect()->intended('/lobby'),
+        };
+    }
 
     public function destroy(Request $request): RedirectResponse
     {

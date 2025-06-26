@@ -24,6 +24,7 @@
         <tr>
           <th class="px-6 py-3 text-left text-gray-700 uppercase text-sm">Código</th>
           <th class="px-6 py-3 text-left text-gray-700 uppercase text-sm">Placa</th>
+          <th class="px-6 py-3 text-left text-gray-700 uppercase text-sm">Propietario</th>
           <th class="px-6 py-3 text-left text-gray-700 uppercase text-sm">Tipo</th>
           <th class="px-6 py-3 text-left text-gray-700 uppercase text-sm">Asientos 1º Piso</th>
           <th class="px-6 py-3 text-left text-gray-700 uppercase text-sm">Asientos 2º Piso</th>
@@ -37,6 +38,7 @@
           <tr class="border-t hover:bg-gray-50">
             <td class="px-6 py-4 text-gray-800">{{ $bus->codigo }}</td>
             <td class="px-6 py-4 text-gray-800">{{ $bus->placa }}</td>
+            <td class="px-6 py-4 text-gray-800">{{ $bus->propietario }}</td>
             <td class="px-6 py-4 text-gray-800">{{ $bus->tipo_de_bus }}</td>
             <td class="px-6 py-4 text-gray-800">{{ $bus->asientos_piso1 }}</td>
             <td class="px-6 py-4 text-gray-800">{{ $bus->asientos_piso2 }}</td>
