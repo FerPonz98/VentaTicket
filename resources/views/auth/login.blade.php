@@ -1,7 +1,7 @@
 {{-- resources/views/auth/login.blade.php --}}
 <x-guest-layout>
  
-    <div class="w-full max-w-sm p-5 bg-white rounded-lg shadow-lg">
+    <div class="w-full max-w-lg p-7 bg-white rounded-lg shadow-lg">
       <!-- Logo de la empresa -->
       <div class="flex justify-center mb-6">
         <img src="{{ asset('img/logo-empresa.jpg') }}" alt="Logotipo Empresa" class="h-20">

@@ -163,6 +163,7 @@
           name="propietario"
           type="text"
           value="{{ old('propietario', $bus->propietario) }}"
+          placeholder="p.ej. Juan Pérez"
           class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-gray-900"
         />
       </div>

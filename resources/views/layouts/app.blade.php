@@ -65,7 +65,7 @@
             {{-- Rutas --}}
             <li x-data="{ open: false }" class="group">
               <button @click="open = !open" class="w-full flex justify-between items-center px-3 py-2 rounded hover:bg-gray-700">
-                <span>Rutas</span>
+                <span>Rutas </span>
                 <svg :class="{ 'rotate-180': open }" class="h-4 w-4 transition-transform" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M5.23 7.21l4.25 4.25 4.25-4.25"/>
                 </svg>

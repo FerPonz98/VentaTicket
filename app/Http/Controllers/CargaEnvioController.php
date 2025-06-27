@@ -2,22 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Encomienda;
+use App\Models\CargaEnvio;
 use App\Models\Ruta;
 use Illuminate\Http\Request;
 
-class EncomiendaController extends Controller
+class CargaEnvioController extends Controller
 {
     public function index()
     {
-        $encomiendas = Encomienda::with(['ruta','origenStop','destinoStop'])->paginate(15);
-        return view('encomiendas.index', compact('encomiendas'));
+        $cargas = CargaEnvio::with(['ruta','origenStop','destinoStop'])->paginate(15);
+        return view('cargaenvios.index', compact('cargas'));
     }
 
     public function create()
     {
         $rutas = Ruta::with('stops')->get();
-        return view('encomiendas.create', compact('rutas'));
+        return view('cargaenvios.create', compact('rutas'));
     }
 
     public function store(Request $request)
@@ -27,6 +27,7 @@ class EncomiendaController extends Controller
             'origen_id'  => 'required|exists:stops,id',
             'destino_id' => 'required|exists:stops,id',
             'peso'       => 'required|numeric|min:0',
+            'volumen'    => 'required|numeric|min:0',
             'precio'     => 'required|numeric|min:0',
         ]);
 
@@ -43,30 +44,31 @@ class EncomiendaController extends Controller
             ]);
         }
 
-        $encomienda = Encomienda::create($v);
+        $carga = CargaEnvio::create($v);
 
-        return redirect()->route('encomiendas.show', $encomienda);
+        return redirect()->route('cargaenvios.show', $carga);
     }
 
-    public function show(Encomienda $encomienda)
+    public function show(CargaEnvio $carga)
     {
-        $encomienda->load(['ruta','origenStop','destinoStop']);
-        return view('encomiendas.show', compact('encomienda'));
+        $carga->load(['ruta','origenStop','destinoStop']);
+        return view('cargaenvios.show', compact('carga'));
     }
 
-    public function edit(Encomienda $encomienda)
+    public function edit(CargaEnvio $carga)
     {
         $rutas = Ruta::with('stops')->get();
-        return view('encomiendas.edit', compact('encomienda','rutas'));
+        return view('cargaenvios.edit', compact('carga','rutas'));
     }
 
-    public function update(Request $request, Encomienda $encomienda)
+    public function update(Request $request, CargaEnvio $carga)
     {
         $v = $request->validate([
             'ruta_id'    => 'required|exists:rutas,id',
             'origen_id'  => 'required|exists:stops,id',
             'destino_id' => 'required|exists:stops,id',
             'peso'       => 'required|numeric|min:0',
+            'volumen'    => 'required|numeric|min:0',
             'precio'     => 'required|numeric|min:0',
         ]);
 
@@ -83,14 +85,14 @@ class EncomiendaController extends Controller
             ]);
         }
 
-        $encomienda->update($v);
+        $carga->update($v);
 
-        return redirect()->route('encomiendas.show', $encomienda);
+        return redirect()->route('cargaenvios.show', $carga);
     }
 
-    public function destroy(Encomienda $encomienda)
+    public function destroy(CargaEnvio $carga)
     {
-        $encomienda->delete();
-        return redirect()->route('encomiendas.index');
+        $carga->delete();
+        return redirect()->route('cargaenvios.index');
     }
 }

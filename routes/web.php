@@ -17,6 +17,8 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\BusController;
 use App\Http\Controllers\RutaController;
 use App\Http\Controllers\ViajeController;
+use App\Http\Controllers\StopController;
+use App\Http\Controllers\RutaStopController;
 
 Route::redirect('/', '/login');
 
@@ -77,3 +79,20 @@ Route::middleware(['auth','rol:admin,supervisor gral,cajero,encomienda,ventas qr
 
 Route::middleware(['auth','rol:chofer y ayudante'])
      ->resource('kardex', KardexController::class);
+
+Route::middleware(['auth','rol:admin,supervisor gral']) 
+     ->resource('stops', StopController::class)
+     ->parameters(['stops' => 'stop']);
+
+Route::middleware(['auth','rol:admin,supervisor gral']) 
+     ->resource('rutas', RutaController::class)
+     ->parameters(['rutas' => 'ruta']);
+
+Route::middleware(['auth','rol:admin,supervisor gral'])
+     ->resource('ruta_stop', RutaStopController::class)
+     ->shallow()
+     ->parameters([
+         'rutas' => 'ruta',
+         'stops' => 'stop',
+     ]);
+

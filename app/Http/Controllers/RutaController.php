@@ -1,84 +1,46 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Ruta;
-use App\Models\Stop;
 use Illuminate\Http\Request;
 
 class RutaController extends Controller
 {
     public function index()
     {
-        $rutas = Ruta::with('stops')->get();
+        $rutas = Ruta::all();
         return view('rutas.index', compact('rutas'));
     }
 
     public function create()
     {
-        $stops = Stop::pluck('name');
-        return view('rutas.create', compact('stops'));
+        return view('rutas.create');
     }
 
     public function store(Request $request)
     {
-        // Validación de datos
-        $data = $request->validate([
-            'origen'                   => 'required|string|max:50',
-            'destino'                  => 'required|string|max:50',
-            'hora_salida'              => 'required|date_format:H:i',
-            'precio_base'              => 'required|numeric|min:0',
-            'precio_bus_doble_semicama'=> 'required|numeric|min:0',
-            'precio_bus_un_piso_semicama'=> 'required|numeric|min:0',
-            'precio_3ra_edad'          => 'required|numeric|min:0',
-            'precio_cortesia'          => 'required|numeric|min:0',
-            'precio_discapacidad'      => 'required|numeric|min:0',
-            'descuento2'               => 'nullable|numeric|min:0',
-            'descuento3'               => 'nullable|numeric|min:0',
-            'stops'                    => 'nullable|array',
-            'stops.*'                  => 'exists:stops,name',
-            'sequence'                 => 'nullable|array',
-            'sequence.*'               => 'integer|min:1',
-            'departure_time'           => 'nullable|array',
-            'departure_time.*'         => 'nullable|date_format:H:i',
-            'precio_parada'            => 'nullable|array',
-            'precio_parada.*'          => 'numeric|min:0',
-        ]);
+        $data = $this->validateRuta($request);
 
-        // Crear la ruta
-        $ruta = Ruta::create([
-            'origen'                   => $data['origen'],
-            'destino'                  => $data['destino'],
-            'hora_salida'              => $data['hora_salida'],
-            'precio_base'              => $data['precio_base'],
-            'precio_bus_doble_semicama'=> $data['precio_bus_doble_semicama'],
-            'precio_bus_un_piso_semicama'=> $data['precio_bus_un_piso_semicama'],
-            'precio_3ra_edad'          => $data['precio_3ra_edad'],
-            'precio_cortesia'          => $data['precio_cortesia'],
-            'precio_discapacidad'      => $data['precio_discapacidad'],
-            'descuento2'               => $data['descuento2'] ?? 0,
-            'descuento3'               => $data['descuento3'] ?? 0,
-        ]);
+        // Extraer paradas y campos extra
+        $paradasInput = $data['paradas'] ?? [];
+        unset($data['paradas']);
 
-        // Asociar las paradas (stops)
-        $attach = [];
-        $stops         = $data['stops'] ?? [];
-        $sequences     = $data['sequence'] ?? [];
-        $times         = $data['departure_time'] ?? [];
-        $pricesPerStop = $data['precio_parada'] ?? [];
+        // Crear ruta con precios de encomienda y carga
+        $ruta = Ruta::create($data);
 
-        foreach ($stops as $i => $stopName) {
-            $stop = Stop::firstOrCreate(['name' => $stopName]);
-            $attach[$stop->id] = [
-                'sequence'       => $sequences[$i] ?? ($i + 1),
-                'departure_time' => $times[$i] ?? null,
-                'precio_parada'  => $pricesPerStop[$i] ?? 0,
-            ];
+        // Agregar paradas con todos los precios (hora opcional)
+        foreach ($paradasInput as $p) {
+            $ruta->addParada(
+                $p['nombre'],                   // nombre
+                (float)$p['precio_pasaje'],     // precio pasaje
+                (float)$p['precio_encomienda_parada'], // precio encomienda
+                (float)$p['precio_carga_parada'],      // precio carga
+                $p['hora'] ?? null              // hora (puede ser null)
+            );
         }
+        $ruta->save();
 
-        // Guardar las paradas asociadas
-        $ruta->stops()->sync($attach);
-
-        // Redirigir con mensaje de éxito
         return redirect()
             ->route('rutas.index')
             ->with('success', 'Ruta creada correctamente.');
@@ -91,76 +53,31 @@ class RutaController extends Controller
 
     public function edit(Ruta $ruta)
     {
-        $stops   = Stop::pluck('name');
-        $current = $ruta->stops->map(function($stop){
-            return array_merge(
-                $stop->pivot->toArray(),
-                ['stop_name' => $stop->name]
-            );
-        });
-        return view('rutas.edit', compact('ruta','stops','current'));
+        return view('rutas.edit', compact('ruta')); 
     }
 
     public function update(Request $request, Ruta $ruta)
     {
-        // Validación de datos
-        $data = $request->validate([
-            'origen'                   => 'required|string|max:50',
-            'destino'                  => 'required|string|max:50',
-            'hora_salida'              => 'required|date_format:H:i',
-            'precio_base'              => 'required|numeric|min:0',
-            'precio_bus_doble_semicama'=> 'required|numeric|min:0',
-            'precio_bus_un_piso_semicama'=> 'required|numeric|min:0',
-            'precio_3ra_edad'          => 'required|numeric|min:0',
-            'precio_cortesia'          => 'required|numeric|min:0',
-            'precio_discapacidad'      => 'required|numeric|min:0',
-            'descuento2'               => 'nullable|numeric|min:0',
-            'descuento3'               => 'nullable|numeric|min:0',
-            'stops'                    => 'nullable|array',
-            'stops.*'                  => 'exists:stops,name',
-            'sequence'                 => 'nullable|array',
-            'sequence.*'               => 'integer|min:1',
-            'departure_time'           => 'nullable|array',
-            'departure_time.*'         => 'nullable|date_format:H:i',
-            'precio_parada'            => 'nullable|array',
-            'precio_parada.*'          => 'numeric|min:0',
-        ]);
+        $data = $this->validateRuta($request);
 
-        // Actualizar la ruta
-        $ruta->update([
-            'origen'                   => $data['origen'],
-            'destino'                  => $data['destino'],
-            'hora_salida'              => $data['hora_salida'],
-            'precio_base'              => $data['precio_base'],
-            'precio_bus_doble_semicama'=> $data['precio_bus_doble_semicama'],
-            'precio_bus_un_piso_semicama'=> $data['precio_bus_un_piso_semicama'],
-            'precio_3ra_edad'          => $data['precio_3ra_edad'],
-            'precio_cortesia'          => $data['precio_cortesia'],
-            'precio_discapacidad'      => $data['precio_discapacidad'],
-            'descuento2'               => $data['descuento2'] ?? 0,
-            'descuento3'               => $data['descuento3'] ?? 0,
-        ]);
+        $paradasInput = $data['paradas'] ?? [];
+        unset($data['paradas']);
 
-        // Asociar las paradas (stops)
-        $attach = [];
-        $stops         = $data['stops'] ?? [];
-        $sequences     = $data['sequence'] ?? [];
-        $times         = $data['departure_time'] ?? [];
-        $pricesPerStop = $data['precio_parada'] ?? [];
+        $ruta->update($data);
 
-        foreach ($stops as $i => $stopName) {
-            $stop = Stop::firstOrCreate(['name' => $stopName]);
-            $attach[$stop->id] = [
-                'sequence'       => $sequences[$i] ?? ($i + 1),
-                'departure_time' => $times[$i] ?? null,
-                'precio_parada'  => $pricesPerStop[$i] ?? 0,
-            ];
+        // Reemplazar paradas
+        $ruta->paradas = [];
+        foreach ($paradasInput as $p) {
+            $ruta->addParada(
+                $p['nombre'],                   // nombre
+                (float)$p['precio_pasaje'],     // precio pasaje
+                (float)$p['precio_encomienda_parada'], // precio encomienda
+                (float)$p['precio_carga_parada'],      // precio carga
+                $p['hora'] ?? null              // hora (opcional)
+            );
         }
+        $ruta->save();
 
-        // Guardar las paradas asociadas
-        $ruta->stops()->sync($attach);
-
-        // Redirigir con mensaje de éxito
         return redirect()
             ->route('rutas.index')
             ->with('success', 'Ruta actualizada correctamente.');
@@ -169,9 +86,41 @@ class RutaController extends Controller
     public function destroy(Ruta $ruta)
     {
         $ruta->delete();
+
         return redirect()
             ->route('rutas.index')
             ->with('success', 'Ruta eliminada correctamente.');
     }
-}
 
+    /**
+     * Valida los campos de la ruta y las paradas.
+     *
+     * @param Request $request
+     * @return array
+     */
+    protected function validateRuta(Request $request): array
+    {
+        return $request->validate([
+            'origen'                         => 'required|string|max:50',
+            'destino'                        => 'required|string|max:50',
+            'hora_salida'                    => 'nullable|date_format:H:i',
+            'precio_bus_normal'              => 'required|numeric|min:0',
+            'recargo_bus_doble_piso'         => 'required|numeric|min:0',
+            'recargo_bus_1piso_ac'           => 'required|numeric|min:0',
+            'recargo_semicama'               => 'nullable|numeric|min:0',
+            'descuento_3ra_edad'             => 'required|numeric|min:0',
+            'precio_cortesia'                => 'required|numeric|min:0',
+            'descuento_discapacidad'         => 'required|numeric|min:0',
+            'descuento_2'                    => 'nullable|numeric|min:0',
+            'descuento_3'                    => 'nullable|numeric|min:0',
+            'precio_encomienda'              => 'required|numeric|min:0',
+            'precio_carga'                   => 'required|numeric|min:0',
+            'paradas'                        => 'nullable|array',
+            'paradas.*.nombre'               => 'required_with:paradas|string|max:100',
+            'paradas.*.precio_pasaje'        => 'required_with:paradas|numeric|min:0',
+            'paradas.*.precio_encomienda_parada' => 'required_with:paradas|numeric|min:0',
+            'paradas.*.precio_carga_parada'  => 'required_with:paradas|numeric|min:0',
+            'paradas.*.hora'                 => 'nullable|date_format:H:i',
+        ]);
+    }
+}

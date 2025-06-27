@@ -4,6 +4,11 @@
 @section('title','Crear Viaje')
 
 @section('content')
+  <a href="{{ route('rutas.index') }}"
+     class="inline-block text-indigo-600 hover:text-indigo-800 underline mb-4">
+    &larr; Volver al listado
+  </a>
+  
   <div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow">
     <h2 class="text-2xl font-semibold text-gray-800 mb-6">Nuevo Viaje</h2>
 
@@ -47,7 +52,7 @@
       </div>
 
       <div>
-        <label class="block mb-1 text-gray-700">Precio</label>
+        <label class="block mb-1 text-gray-700">Precio (Bs)</label>
         <input type="number" step="0.01" name="precio"
                value="{{ old('precio') }}"
                class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"

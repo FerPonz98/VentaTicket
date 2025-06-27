@@ -32,6 +32,7 @@
             <td class="px-6 py-4 text-gray-800">{{ \Carbon\Carbon::parse($viaje->fecha_salida)->format('Y-m-d H:i') }}</td>
             <td class="px-6 py-4 text-gray-800">{{ number_format($viaje->precio,2) }}</td>
             <td class="px-6 py-4 space-x-2">
+               <a href="{{ route('viajes.show', $viaje) }}" class="text-green-600">Ver</a>
               <a href="{{ route('viajes.edit', $viaje) }}"
                  class="text-indigo-600 hover:text-indigo-800 font-medium">
                 Editar

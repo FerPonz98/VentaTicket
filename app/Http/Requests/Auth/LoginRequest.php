@@ -21,6 +21,7 @@ class LoginRequest extends FormRequest
         return [
             'ci_usuario' => ['required', 'string'],
             'password'   => ['required', 'string'],
+            'remember'   => ['sometimes', 'boolean'],
         ];
     }
 

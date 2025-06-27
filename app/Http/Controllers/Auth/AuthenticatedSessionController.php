@@ -54,6 +54,7 @@ class AuthenticatedSessionController extends Controller
         return match ($user->rol) {
             'admin'             => redirect()->intended('/admin'),
             'supervisor gral'   => redirect()->intended('/supervisor'),
+            'supervisor suc'   => redirect()->intended('/supervisor suc'),
             'cajero'            => redirect()->intended('/cajero'),
             'chofer y ayudante' => redirect()->intended('/chofer'),
             default             => redirect()->intended('/lobby'),

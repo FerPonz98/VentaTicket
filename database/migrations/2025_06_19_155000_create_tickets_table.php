@@ -4,24 +4,29 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+class CreateTicketsTable extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
         Schema::create('tickets', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('ruta_id')
+                  ->constrained('rutas')
+                  ->cascadeOnDelete();
+            $table->foreignId('origen_id')
+                  ->constrained('stops')
+                  ->cascadeOnDelete();
+            $table->foreignId('destino_id')
+                  ->constrained('stops')
+                  ->cascadeOnDelete();
+            $table->string('tipo_pasajero', 50);
+            $table->decimal('precio', 10, 2);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('tickets');
     }
-};
+}

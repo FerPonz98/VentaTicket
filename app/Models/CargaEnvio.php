@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Ticket extends Model
+class CargaEnvio extends Model
 {
     use HasFactory;
 
@@ -13,8 +13,10 @@ class Ticket extends Model
         'ruta_id',
         'origen_id',
         'destino_id',
-        'tipo_pasajero',
+        'peso',
+        'volumen',
         'precio',
+        // otros campos que necesites
     ];
 
     public function ruta()
