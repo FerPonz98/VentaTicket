@@ -39,7 +39,7 @@
               </x-nav-link>
             @endif
 
-            @if(Auth::user()->rol === 'chofer y ayudante')
+            @if(in_array(Auth::user()->rol, ['chofer','ayudante']))
               <x-nav-link :href="route('kardex.index')" :active="request()->routeIs('kardex.*')">
                 Kardex
               </x-nav-link>
@@ -136,7 +136,7 @@
             Encomienda
           </x-responsive-nav-link>
         @endif
-        @if(Auth::user()->rol === 'chofer y ayudante')
+        @if(in_array(Auth::user()->rol, ['chofer','ayudante']))
           <x-responsive-nav-link :href="route('kardex.index')" :active="request()->routeIs('kardex.*')">
             Kardex
           </x-responsive-nav-link>

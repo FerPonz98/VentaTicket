@@ -4,7 +4,6 @@
 @section('title','Editar Chofer')
 
 @section('content')
-  {{-- Link de volver al listado --}}
   <a href="{{ route('choferes.index') }}"
      class="inline-block text-indigo-600 hover:text-indigo-800 underline mb-4">
     &larr; Volver al listado
@@ -13,12 +12,27 @@
   <div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow">
     <h2 class="text-2xl font-semibold text-gray-800 mb-6">Editar Chofer</h2>
 
-    <form action="{{ route('choferes.update', $chofer) }}" method="POST" class="space-y-6">
+    <form action="{{ route('choferes.update', $chofer->CI) }}" method="POST" class="space-y-6">
       @csrf
       @method('PATCH')
 
+      {{-- CI del Chofer --}}
+      <div>
+        <label for="CI" class="block mb-1 text-gray-700 font-medium">CI*</label>
+        <input
+          id="CI"
+          type="text"
+          name="CI"
+          value="{{ old('CI', $chofer->CI) }}"
+          required
+          class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
+        />
+        @error('CI')
+          <p class="mt-1 text-red-600 text-sm">{{ $message }}</p>
+        @enderror
+      </div>
 
-      {{-- Número  --}}
+      {{-- Número --}}
       <div>
         <label for="numero" class="block mb-1 text-gray-700 font-medium">N°*</label>
         <input
@@ -33,20 +47,19 @@
           <p class="mt-1 text-red-600 text-sm">{{ $message }}</p>
         @enderror
       </div>
+
       {{-- Código de Bus --}}
       <div>
-        <label for="bus_codigo" class="block mb-1 text-gray-700 font-medium">
-          Código Bus *
-        </label>
-      <input
-      id="bus_codigo"
-      type="text"
-        name="bus_codigo"
+        <label for="bus_codigo" class="block mb-1 text-gray-700 font-medium">Código Bus*</label>
+        <input
+          id="bus_codigo"
+          type="text"
+          name="bus_codigo"
           value="{{ old('bus_codigo', $chofer->bus_codigo) }}"
           required
-          class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500     text-gray-900"
-          />
-          @error('bus_codigo')
+          class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
+        />
+        @error('bus_codigo')
           <p class="mt-1 text-red-600 text-sm">{{ $message }}</p>
         @enderror
       </div>

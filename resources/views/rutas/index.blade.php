@@ -1,54 +1,57 @@
 {{-- resources/views/rutas/index.blade.php --}}
 @extends('layouts.app')
 
-@section('title','Administrar Rutas, Paradas y Tramos')
+@section('title','Administrar Rutas')
 
 @section('content')
-  {{-- RUTAS --}}
-  <div class="flex justify-between items-center mb-6">
-    <h2 class="text-2xl font-semibold text-gray-800">Rutas</h2>
-    <a href="{{ route('rutas.create') }}" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded">
-      + Nueva Ruta
-    </a>
+  {{-- Botón Nueva Ruta --}}
+  <div class="w-full flex flex-row-reverse p-4 pb-8">
+    <a href="{{ route('rutas.create') }}"
+       class="bg-green-600 p-2 text-white text-sm font-normal rounded-lg shadow hover:bg-green-700 transition"
+    >+ Nueva Ruta</a>
   </div>
 
-  <div class="overflow-x-auto bg-white rounded-lg shadow mb-12">
-    <table class="min-w-full">
-      <thead class="bg-gray-100">
+  {{-- BOX A: Rutas --}}
+  <div class="bg-white shadow-xl rounded-lg overflow-hidden p-6 mb-6">
+    <table class="min-w-full table-auto">
+      <thead class="bg-white">
         <tr>
-          <th class="px-4 py-2 text-gray-700 text-left">ID</th>
-          <th class="px-4 py-2 text-gray-700 text-left">Origen</th>
-          <th class="px-4 py-2 text-gray-700 text-left">Destino</th>
-          <th class="px-4 py-2 text-gray-700 text-left">Paradas</th>
-          <th class="px-4 py-2 text-gray-700 text-center">Acciones</th>
+          <th colspan="5" class="text-2xl font-bold text-black text-left">
+            <div class="flex justify-between items-center w-full">
+              <h2>Rutas</h2>
+            </div>
+          </th>
+        </tr>
+        <tr>
+          <th colspan="7" class="px-6 py-2 bg-white">
+
+          </th>
+        </tr>
+        <tr class="text-left bg-gray-200 text-black uppercase text-sm leading-normal">
+          <th class="px-6 py-3">ID</th>
+          <th class="px-6 py-3">Origen</th>
+          <th class="px-6 py-3">Destino</th>
+          <th class="px-6 py-3">Paradas</th>
+          <th class="px-6 py-3">Acciones</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="text-gray-700 text-sm border border-gray-200">
         @forelse($rutas as $ruta)
-          <tr class="border-t hover:bg-gray-50 align-top">
-            <td class="px-4 py-2 text-gray-900">{{ $ruta->id }}</td>
-            <td class="px-4 py-2 text-gray-900">{{ $ruta->origen }}</td>
-            <td class="px-4 py-2 text-gray-900">{{ $ruta->destino }}</td>
-
-            {{-- Listado de paradas --}}
-            <td class="px-4 py-2 text-gray-900">
+          <tr class="border-b border-gray-200 hover:bg-gray-50">
+            <td class="px-6 py-4">{{ $ruta->id }}</td>
+            <td class="px-6 py-4">{{ $ruta->origen }}</td>
+            <td class="px-6 py-4">{{ $ruta->destino }}</td>
+            <td class="px-6 py-4">
               @php $paradas = $ruta->paradas ?? []; @endphp
-
               @if(count($paradas))
                 <ul class="list-disc ml-4 space-y-1">
                   @foreach($paradas as $p)
-                    <li>
+                    <li class="text-gray-900">
                       <strong>{{ $p['numero'] }}.</strong> {{ $p['nombre'] }}
-                      — Bs {{ number_format($p['precio_pasaje']?? 0, 2) }}
-                      @isset($p['precio_encomienda_parada'])
-                        | Encomienda: Bs {{ number_format($p['precio_encomienda_parada'] ?? 0, 2) }}
-                      @endisset
-                      @isset($p['precio_carga_parada'])
-                        | Carga: Bs {{ number_format($p['precio_carga_parada'] ?? 0, 2) }}
-                      @endisset
-                      @if(!empty($p['hora']))
-                        | Hora: {{ \Carbon\Carbon::createFromFormat('H:i', $p['hora'])->format('H:i') }}
-                      @endif
+                      — Bs {{ number_format($p['precio_pasaje'] ?? 0, 2) }}
+                      @isset($p['precio_encomienda_parada']) | Encomienda: Bs {{ number_format($p['precio_encomienda_parada'], 2) }} @endisset
+                      @isset($p['precio_carga_parada']) | Carga: Bs {{ number_format($p['precio_carga_parada'], 2) }} @endisset
+                      @if(!empty($p['hora'])) | Hora: {{ \Carbon\Carbon::createFromFormat('H:i', $p['hora'])->format('H:i') }} @endif
                     </li>
                   @endforeach
                 </ul>
@@ -56,22 +59,26 @@
                 <span class="text-gray-500">Sin paradas</span>
               @endif
             </td>
-
-            <td class="px-4 py-2 text-center space-x-2">
-              <a href="{{ route('rutas.show', $ruta) }}" class="text-green-600">Ver</a>
-              <a href="{{ route('rutas.edit', $ruta) }}" class="text-blue-600">Editar</a>
+            <td class="px-6 py-4 space-x-2">
+              <a href="{{ route('rutas.show', $ruta) }}" class="text-indigo-600 hover:underline">Ver</a>
+              <a href="{{ route('rutas.edit', $ruta) }}" class="text-yellow-600 hover:underline">Editar</a>
               <form action="{{ route('rutas.destroy', $ruta) }}" method="POST" class="inline">
                 @csrf @method('DELETE')
-                <button onclick="return confirm('¿Eliminar esta ruta?')" class="text-red-600">Borrar</button>
+                <button onclick="return confirm('¿Eliminar esta ruta?')" class="text-red-600 hover:underline">Borrar</button>
               </form>
             </td>
           </tr>
         @empty
           <tr>
-            <td colspan="5" class="px-4 py-4 text-center text-gray-600">No hay rutas.</td>
+            <td colspan="5" class="px-6 py-4 text-center text-gray-500">No hay rutas.</td>
           </tr>
         @endforelse
       </tbody>
     </table>
+    @if(method_exists($rutas, 'links'))
+      <div class="mt-4">
+        {{ $rutas->withQueryString()->links() }}
+      </div>
+    @endif
   </div>
 @endsection

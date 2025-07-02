@@ -4,7 +4,11 @@
 @section('title', 'Bienvenido')
 
 @section('content')
-  <div class="max-w-4xl mx-auto space-y-8">
+@php
+    $rol = Auth::user()->rol;
+@endphp
+
+<div class="max-w-4xl mx-auto space-y-8">
     {{-- Tarjeta de bienvenida --}}
     <div class="bg-white p-8 rounded-2xl shadow-lg text-center">
       <img src="{{ asset('img/logo-empresa.jpg') }}" alt="Logo" class="mx-auto h-16 mb-4">
@@ -35,6 +39,17 @@
           <h3 class="text-xl font-semibold">Venta de Pasajes</h3>
         </a>
       @endcan
+      {{-- Kardex --}}
+@if(in_array($rol, ['chofer','ayudante']))
+  <a href="{{ route('kardex.index') }}"
+     class="block bg-gradient-to-br from-purple-400 to-purple-600 hover:from-purple-500 hover:to-purple-700 text-white rounded-xl shadow-md p-6 text-center transition">
+    <svg class="w-12 h-12 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-3-3v6m-9 4h18a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"/>
+    </svg>
+    <h3 class="text-xl font-semibold">Kardex</h3>
+  </a>
+@endif
 
       {{-- Carga --}}
       @can('viewAny', App\Models\Carga::class)

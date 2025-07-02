@@ -4,7 +4,7 @@
 @section('title','Crear Viaje')
 
 @section('content')
-  <a href="{{ route('rutas.index') }}"
+  <a href="{{ route('viajes.index') }}"
      class="inline-block text-indigo-600 hover:text-indigo-800 underline mb-4">
     &larr; Volver al listado
   </a>
@@ -68,4 +68,21 @@
       </div>
     </form>
   </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const precios = @json($precios); // precios_bus_normal por id de ruta
+      const rutaSelect = document.querySelector('select[name="ruta_id"]');
+      const precioInput = document.querySelector('input[name="precio"]');
+
+      rutaSelect.addEventListener('change', function() {
+        const rutaId = this.value;
+        if (precios[rutaId]) {
+          precioInput.value = precios[rutaId];
+        } else {
+          precioInput.value = '';
+        }
+      });
+    });
+  </script>
 @endsection

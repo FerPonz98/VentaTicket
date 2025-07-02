@@ -1,18 +1,14 @@
-{{-- resources/views/buses/create.blade.php --}}
 @extends('layouts.app')
 
 @section('title','Crear Bus')
 
 @section('content')
-  {{-- Volver al listado --}}
-  <a href="{{ route('buses.index') }}" class="inline-block text-indigo-600 hover:text-indigo-800 underline mb-4">
-    &larr; Volver al listado
-  </a>
-
-  <div class="max-w-xl mx-auto bg-white p-6 rounded-lg shadow">
-    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Nuevo Bus</h2>
-
-    {{-- Mostrar errores de validación --}}
+<a href="{{ route('buses.index') }}" class="inline-block text-indigo-600 hover:text-indigo-800 underline mb-4">&larr; Volver al listado</a>
+<div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-8">
+  <div>
+    <div class="bg-gray-50 p-6 rounded-lg shadow space-y-6">
+      
+          {{-- Mostrar errores de validación --}}
     @if($errors->any())
       <div class="bg-red-100 border border-red-400 text-red-700 p-4 rounded mb-6">
         <ul class="list-disc list-inside">
@@ -25,9 +21,10 @@
 
     <form action="{{ route('buses.store') }}" method="POST" class="space-y-6">
       @csrf
-
-      {{-- Código del bus --}}
       <div>
+       <h2 class="text-2xl font-bold mb-6 text-black">
+      Nuevo Bus
+        </h2>
         <label for="codigo" class="block mb-1 text-gray-700 font-medium">Código*</label>
         <input
           id="codigo"
@@ -251,10 +248,13 @@
           Crear
         </button>
       </div>
+      <input type="hidden" id="layout1" name="layout_piso1" value='@json(old("layout_piso1", []))'>
+      <input type="hidden" id="layout2" name="layout_piso2" value='@json(old("layout_piso2", []))'>
     </form>
   </div>
 
   <script>
+    
     document.addEventListener('DOMContentLoaded', function() {
       const tipoSelect = document.getElementById('tipo_de_bus');
       const asientos2Div = document.getElementById('asientos_piso2_div');
@@ -289,5 +289,232 @@
     syncSecondary();
   });
 </script>
+    </div>
+  
 
+    {{-- Columna derecha: herramienta de diseño de asientos --}}
+<div>
+  <div class="bg-white p-6 rounded-lg shadow space-y-8">
+    <h3 class="text-lg text-black font-semibold mb-2">Herramienta de diseño de asientos</h3>
+    
+{{-- Leyenda de símbolos --}}
+<div class="flex items-center gap-4 mb-4">
+<div class="flex items-center gap-1">
+    <span class="cell aisle" style="width:24px; height:24px; background:#ffffff; border:1px solid #ccc; display:inline-flex; align-items:center; justify-content:center;"></span>
+    <span class="text-sm text-black">Asiento</span>
+  </div>
+<div class="flex items-center gap-1">
+    <span class="cell aisle" style="width:24px; height:24px; background:#f0f0f0; border:1px solid #ccc; display:inline-flex; align-items:center; justify-content:center;"></span>
+    <span class="text-sm text-black">Pasillo</span>
+  </div>
+  <div class="flex items-center gap-1">
+    <span class="cell entry" style="width:24px; height:24px; border:1px solid #ccc; display:inline-flex; align-items:center; justify-content:center;"></span>
+    <span class="text-sm text-black">Entrada</span>
+  </div>
+  <div class="flex items-center gap-1">
+    <span class="cell exit" style="width:24px; height:24px; border:1px solid #ccc; display:inline-flex; align-items:center; justify-content:center;"></span>
+    <span class="text-sm text-black">Salida</span>
+  </div>
+
+</div>
+
+<style>
+  .cell            { width:50px; height:50px; border:1px solid #ccc; display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; }
+.cell.aisle      { background:#f0f0f0; }
+.cell.entry::after { content:'→'; position:absolute; font-size:18px; color: #111; }
+.cell.exit::after  { content:'←'; position:absolute; font-size:18px; color: #111; }
+.cell.empty      { background:transparent; border:none; }
+.row             { display:flex; gap:8px; }
+.full            { display:grid; grid-template-columns:repeat(5,50px); gap:8px; }
+.selected        { background:#3b82f6; color:#fff; }
+.cell.seat {
+  color: #111 !important;
+}
+</style>
+    <div class="flex gap-4 mb-4">
+      <label class="inline-flex text-black items-center">
+        <input type="radio" name="mode" value="seat" checked class="mr-2"> Asiento
+      </label>
+      <label class="inline-flex text-black items-center">
+        <input type="radio" name="mode" value="aisle" class="mr-2"> Pasillo
+      </label>
+      <label class="inline-flex text-black items-center">
+        <input type="radio" name="mode" value="entry" class="mr-2"> Entrada
+      </label>
+      <label class="inline-flex text-black items-center">
+        <input type="radio" name="mode" value="exit" class="mr-2"> Salida
+      </label>
+
+    </div>
+
+    <div>
+      <h4 class="font-medium text-black mb-1">Piso 1</h4>
+      <div id="grid1" class="space-y-2 mb-2"></div>
+      <div class="flex gap-2">
+        <button id="add1" type="button" class="bg-blue-500 text-white px-3 py-1 rounded">+</button>
+        <button id="sub1" type="button" class="bg-red-500 text-white px-3 py-1 rounded">-</button>
+      </div>
+    </div>
+
+    <div id="piso2-block" style="display:none; margin-top:1rem;">
+      <h4 class="font-medium text-black mb-1">Piso 2</h4>
+      <div id="grid2" class="space-y-2 mb-2"></div>
+      <div class="flex gap-2">
+        <button id="add2" type="button" class="bg-blue-500 text-white px-3 py-1 rounded">+</button>
+        <button id="sub2" type="button" class="bg-red-500 text-white px-3 py-1 rounded">-</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+ 
+  function genLayout(cnt) {
+  const rows = [];
+  let n = 1;
+
+  const fullRows = Math.floor(cnt / 4);
+  const rem = cnt % 4;
+
+  if (cnt > 0 && cnt % 5 === 0) {
+ 
+    const filasNormales = Math.floor((cnt - 5) / 4);
+    for (let i = 0; i < filasNormales; i++) {
+      rows.push([String(n++), String(n++), 'aisle', String(n++), String(n++)]);
+    }
+  
+    const filaFinal = [];
+    for (let i = 0; i < 5; i++) filaFinal.push(String(n++));
+    rows.push(filaFinal);
+  } else {
+
+    for (let i = 0; i < fullRows; i++) {
+      rows.push([String(n++), String(n++), 'aisle', String(n++), String(n++)]);
+    }
+    if (rem) {
+      const row = [];
+      if (rem <= 2) {
+        for (let i = 0; i < rem; i++) row.push(String(n++));
+        for (let i = rem; i < 5; i++) row.push('empty');
+      } else {
+        row.push(String(n++));
+        row.push(String(n++));
+        row.push('aisle');
+        for (let i = 2; i < rem; i++) row.push(String(n++));
+        for (let i = rem + 1; i < 5; i++) row.push('empty');
+      }
+      rows.push(row);
+    }
+  }
+  return rows;
+}
+
+  function syncCount(gridId, inputEl) {
+    const cells = document.querySelectorAll(`#${gridId} .cell`);
+    const count = Array.from(cells).filter(c => /^\d+$/.test(c.dataset.type)).length;
+    inputEl.value = count;
+  }
+  function renumerarAsientos(gridId) {
+  const grid = document.getElementById(gridId);
+  let num = 1;
+  Array.from(grid.querySelectorAll('.cell.seat')).forEach(cell => {
+    cell.innerText = num;
+    cell.dataset.type = String(num);
+    num++;
+  });
+}
+  function render(piso, layout, gridId) {
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = '';
+    layout.forEach(row => {
+      const container = document.createElement('div');
+      container.className = row.length === 5 ? 'full' : 'row';
+      row.forEach(cell => {
+        const el = document.createElement('div');
+        el.className = 'cell ' + (['aisle','empty'].includes(cell) ? cell : 'seat');
+        el.innerText = /^\d+$/.test(cell) ? cell : '';
+        el.dataset.type = cell;
+        el.addEventListener('click', () => {
+  if (cell === 'empty') return;
+  const mode = document.querySelector('input[name="mode"]:checked').value;
+
+  if (mode === 'seat') {
+    const nuevo = prompt('Número de asiento:');
+    if (!nuevo || !/^\d+$/.test(nuevo)) return;
+
+    const todos = Array.from(document.querySelectorAll('.cell'))
+      .filter(c => c !== el && c.dataset.type === 'seat')
+      .map(c => c.innerText);
+    if (todos.includes(nuevo)) {
+      alert('Ese número de asiento ya está en uso.');
+      return;
+    }
+    el.innerText    = nuevo;
+    el.dataset.type = nuevo;
+    el.className    = 'cell seat selected';
+  } else {
+    el.dataset.type = mode;
+    el.innerText    = '';
+    el.className    = 'cell ' + mode;
+    renumerarAsientos(gridId);
+  }
+
+  save(piso, gridId);
+  if (gridId === 'grid1') {
+    syncCount('grid1', document.getElementById('asientos_piso1'));
+  } else {
+    syncCount('grid2', document.getElementById('asientos_piso2'));
+  }
+});
+
+        container.appendChild(el);
+      });
+      grid.appendChild(container);
+    });
+  }
+
+  function save(piso, gridId) {
+    const rows = Array.from(document.getElementById(gridId).children)
+      .map(r => Array.from(r.children).map(c => c.dataset.type));
+    document.getElementById('layout' + piso).value = JSON.stringify(rows);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const tipo   = document.getElementById('tipo_de_bus'),
+          p1     = document.getElementById('asientos_piso1'),
+          p2     = document.getElementById('asientos_piso2'),
+          div2   = document.getElementById('asientos_piso2_div'),
+          block2 = document.getElementById('piso2-block'),
+          add1   = document.getElementById('add1'),
+          add2   = document.getElementById('add2'),
+          sub1   = document.getElementById('sub1'),
+          sub2   = document.getElementById('sub2'),
+          layout1= document.getElementById('layout1'),
+          layout2= document.getElementById('layout2');
+
+    function updateAll() {
+      div2.style.display   = tipo.value === 'Doble piso' ? 'block' : 'none';
+      block2.style.display = tipo.value === 'Doble piso' ? 'block' : 'none';
+
+      const cnt1 = parseInt(p1.value) || 0,
+            cnt2 = parseInt(p2.value) || 0,
+            l1   = JSON.parse(layout1.value) || [],
+            l2   = JSON.parse(layout2.value) || [];
+
+      render(1, l1.length ? l1 : genLayout(cnt1), 'grid1');
+      if (tipo.value === 'Doble piso') {
+        render(2, l2.length ? l2 : genLayout(cnt2), 'grid2');
+      }
+    }
+
+    [tipo, p1, p2].forEach(el => el.addEventListener('input', updateAll));
+    add1.addEventListener('click', () => { p1.value++; updateAll(); });
+    add2.addEventListener('click', () => { p2.value++; updateAll(); });
+    sub1.addEventListener('click', () => { if (p1.value > 1) { p1.value--; updateAll(); } });
+    sub2.addEventListener('click', () => { if (p2.value > 0) { p2.value--; updateAll(); } });
+
+    updateAll();
+  });
+</script>
 @endsection

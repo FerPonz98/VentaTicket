@@ -2,63 +2,257 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pasaje;
+use App\Models\Viaje;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
 
 class PasajeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $fecha = $request->input('fecha', now()->toDateString());
+        $viajesHoy = Viaje::with(['bus','ruta','pasajes'])
+                          ->whereDate('fecha_salida', $fecha)
+                          ->orderBy('fecha_salida')
+                          ->get();
+
+        $pasajesRecientes = Pasaje::with(['viaje.bus', 'viaje.ruta', 'usuario'])
+            ->orderByDesc('created_at')
+            ->take(5)
+            ->get();
+
+        return view('pasajes.index', compact('fecha','viajesHoy', 'pasajesRecientes'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function disponibilidad(Viaje $viaje)
     {
-        //
+        $viaje->load('bus','ruta','pasajes');
+        $capacidad = $viaje->bus->asientos_piso1 + $viaje->bus->asientos_piso2;
+        $vendidos  = $viaje->pasajes->count();
+        $restantes = max(0, $capacidad - $vendidos);
+
+        return view('pasajes.disponibilidad', compact('viaje','capacidad','vendidos','restantes'));
+    }
+    public function paso1(Request $request)
+    {
+        $viajeId = $request->query('viaje_id');
+        $viaje   = $viajeId
+                 ? Viaje::findOrFail($viajeId)
+                 : null;
+ 
+        return view('pasajes.paso1', compact('viaje'));
+    }
+ 
+  
+    public function cerrarViaje(Viaje $viaje)
+    {
+       
+        $viaje->update(['cerrado' => true]);
+    
+        return redirect()
+            ->route('pasajes.paso1', ['viaje_id' => $viaje->id])
+            ->with('success', "El viaje #{$viaje->id} ha sido cerrado.");
+    }
+ 
+    public function plantilla(Viaje $viaje)
+    {
+        if (! $viaje->cerrado) {
+            return redirect()
+                ->route('pasajes.paso1', ['viaje_id' => $viaje->id])
+                ->with('error', 'Primero debes cerrar el viaje antes de descargar la plantilla.');
+        }
+ 
+        return view('pasajes.plantilla', compact('viaje'));
+    }
+    public function create(Request $request)
+    {
+        $viajes = Viaje::with('ruta','bus')->orderBy('fecha_salida')->get();
+        $tipos = [
+            'adulto'       => 'Adulto',
+            'tercera_edad' => '3ra Edad',
+            'menor'        => 'Menor de Edad',
+            'cortesia'     => 'Cortesía',
+            'desc'         => 'Descuento',
+        ];
+        $formasPago = [
+            'efectivo'     => 'Efectivo',
+            'tarjeta'      => 'Tarjeta',
+            'qr'           => 'QR',
+            'pago_destino' => 'Pago en Destino',
+        ];
+
+        $viajeSeleccionado = $request->query('viaje_id');
+        $ocupados = [];
+        if ($viajeSeleccionado) {
+            $ocupados = Pasaje::where('viaje_id', $viajeSeleccionado)
+                              ->pluck('asiento')
+                              ->map(fn($a) => (int)$a)
+                              ->toArray();
+        }
+
+        return view('pasajes.create', compact(
+            'viajes','tipos','formasPago','viajeSeleccionado','ocupados'
+        ));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $data = $request->validate([
+            'viaje_id'        => 'required|exists:viajes,id',
+            'origen'          => 'required|string',
+            'destino'         => 'required|string',
+            'asiento'         => 'required|integer|min:1',
+            'nombre_completo' => 'required|string|max:255',
+            'tipo_pasajero'   => 'required|in:adulto,tercera_edad,menor,cortesia,desc',
+            'fecha'           => 'required|date',
+            'forma_pago'      => 'required|in:efectivo,tarjeta,qr,pago_destino',
+        ]);
+
+        Session::put('venta.datos', $data);
+
+        return redirect()->route('pasajes.confirmar');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function confirmar()
     {
-        //
+        $datos = Session::get('venta.datos');
+        if (! $datos) {
+            return redirect()->route('pasajes.create');
+        }
+
+        $viaje = Viaje::with('ruta')->findOrFail($datos['viaje_id']);
+
+        $precio = match($datos['tipo_pasajero']) {
+            'tercera_edad' => max(0, $viaje->precio - $viaje->ruta->descuento_3ra_edad),
+            'menor'        => max(0, $viaje->precio * 0.5),
+            'cortesia'     => 0,
+            'desc'         => max(0, $viaje->precio - $viaje->ruta->descuento_2),
+            default        => $viaje->precio,
+        };
+
+        return view('pasajes.confirmar', compact('datos','viaje','precio'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function finalizar()
     {
-        //
+        $data = Session::pull('venta.datos');
+        if (! $data) {
+            return redirect()->route('pasajes.create');
+        }
+
+        $viaje = Viaje::with('ruta')->findOrFail($data['viaje_id']);
+
+        $data['origen']          = $viaje->ruta->origen;
+        $data['precio']          = match($data['tipo_pasajero']) {
+            'tercera_edad' => max(0, $viaje->precio - $viaje->ruta->descuento_3ra_edad),
+            'menor'        => max(0, $viaje->precio * 0.5),
+            'cortesia'     => 0,
+            'desc'         => max(0, $viaje->precio - $viaje->ruta->descuento_2),
+            default        => $viaje->precio,
+        };
+        $data['cajero_id']       = Auth::user()->ci_usuario;
+        $data['hora_en_oficina'] = now()->format('H:i');
+
+        $pasaje = Pasaje::create($data);
+
+        $pdf = PDF::loadView('pasajes.pdf', ['pasaje' => $pasaje]);
+        $pdf->setPaper([0, 0, 226.77, 480], 'portrait');
+        return $pdf->stream("pasaje_{$pasaje->id}.pdf");
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function show(Pasaje $pasaje)
     {
-        //
+        $pasaje->load(['viaje.ruta','cajero']);
+        return view('pasajes.show', compact('pasaje'));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function ticket(Pasaje $pasaje)
     {
-        //
+        $pasaje->load(['viaje.ruta','cajero']);
+        $pdf = PDF::loadView('pasajes.pdf', ['pasaje' => $pasaje]);
+        $pdf->setPaper([0, 0, 226.77, 480], 'portrait'); 
+        return $pdf->stream("pasaje_{$pasaje->id}.pdf");
+    }
+
+    public function edit(Pasaje $pasaje)
+    {
+        $viajes     = Viaje::with('ruta')->orderBy('fecha_salida')->get();
+        $tipos      = [
+            'adulto'       => 'Adulto',
+            'tercera_edad' => '3ra Edad',
+            'menor'        => 'Menor de Edad',
+            'cortesia'     => 'Cortesía',
+            'desc'         => 'Descuento',
+        ];
+        $formasPago = [
+            'efectivo'     => 'Efectivo',
+            'tarjeta'      => 'Tarjeta',
+            'qr'           => 'QR',
+            'pago_destino' => 'Pago en Destino',
+        ];
+
+        return view('pasajes.edit', compact('pasaje','viajes','tipos','formasPago'));
+    }
+
+    public function update(Request $request, Pasaje $pasaje)
+    {
+        $data = $request->validate([
+            'viaje_id'        => 'required|exists:viajes,id',
+            'asiento'         => 'required|integer|min:1',
+            'nombre_completo' => 'required|string|max:255',
+            'tipo_pasajero'   => 'required|in:adulto,tercera_edad,menor,cortesia,desc',
+            'fecha'           => 'required|date',
+            'forma_pago'      => 'required|in:efectivo,tarjeta,qr,pago_destino',
+        ]);
+
+        $viaje = Viaje::with('ruta')->findOrFail($data['viaje_id']);
+
+        $data['origen']  = $viaje->ruta->origen;
+        $data['destino'] = $data['destino']; 
+        $data['precio']  = match($data['tipo_pasajero']) {
+            'tercera_edad' => max(0, $viaje->precio - $viaje->ruta->descuento_3ra_edad),
+            'menor'        => max(0, $viaje->precio * 0.5),
+            'cortesia'     => 0,
+            'desc'         => max(0, $viaje->precio - $viaje->ruta->descuento_2),
+            default        => $viaje->precio,
+        };
+
+        $pasaje->update($data);
+
+        return redirect()->route('pasajes.show', $pasaje)
+                         ->with('success','Pasaje actualizado correctamente.');
+    }
+
+    public function destroy(Pasaje $pasaje)
+    {
+        $pasaje->delete();
+
+        return redirect()->route('pasajes.index')
+                         ->with('success','Pasaje eliminado correctamente.');
+    }
+
+    public function viajesPorFecha(Request $request)
+    {
+        $fecha = $request->input('fecha', now()->toDateString());
+        $viajes = Viaje::with(['bus','ruta'])
+                       ->whereDate('fecha_salida', $fecha)
+                       ->orderBy('fecha_salida')
+                       ->get();
+
+        return view('pasajes.viajes_por_fecha', compact('viajes','fecha'));
+    }
+
+    public function verVendidosPorViaje(Viaje $viaje)
+    {
+        $viaje->load(['ruta','pasajes']);
+        return view('pasajes.vendidos_por_viaje', compact('viaje'));
+    }
+    public function pdf(Pasaje $pasaje)
+    {
+        $pdf = \PDF::loadView('pasajes.pdf', compact('pasaje'));
+        return $pdf->stream("pasaje_{$pasaje->id}.pdf");
     }
 }

@@ -36,13 +36,17 @@ class User extends Authenticatable
         'creado_en',
         'password' ,
         'security_question',
-        'security_answer'
-        
+        'security_answer',
+        'sucursal'
     ];
     protected $hidden = [
         'password',
         'remember_token',
     ];
+    public function chofer()
+    {
+        return $this->hasOne(Chofer::class, 'CI', 'ci_usuario');
+    }
 
 }
 

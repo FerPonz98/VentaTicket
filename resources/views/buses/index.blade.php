@@ -1,15 +1,14 @@
 {{-- resources/views/buses/index.blade.php --}}
 @extends('layouts.app')
 
-@section('title','Listado de Buses')
+@section('title','Buses')
 
 @section('content')
-  <div class="flex justify-between items-center mb-6">
-    <h2 class="text-2xl font-semibold text-gray-800">Listado de Buses</h2>
+  {{-- Botón Crear Bus --}}
+  <div class="w-full flex flex-row-reverse p-4 pb-8">
     <a href="{{ route('buses.create') }}"
-       class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded">
-      + Crear Bus
-    </a>
+       class="bg-green-600 p-2 text-white text-sm font-normal rounded-lg shadow hover:bg-green-700 transition"
+    >+ Crear Bus</a>
   </div>
 
   @if(session('success'))
@@ -18,42 +17,53 @@
     </div>
   @endif
 
-  <div class="overflow-x-auto bg-white rounded-lg shadow">
-    <table class="min-w-full">
-      <thead class="bg-gray-100">
+  {{-- BOX A: Administración de Buses --}}
+  <div class="bg-white shadow-xl rounded-lg overflow-hidden p-6 mb-6 overflow-x-auto">
+    <table class="min-w-full table-auto">
+      <thead class="bg-white">
         <tr>
-          <th class="px-6 py-3 text-left text-gray-700 uppercase text-sm">Código</th>
-          <th class="px-6 py-3 text-left text-gray-700 uppercase text-sm">Placa</th>
-          <th class="px-6 py-3 text-left text-gray-700 uppercase text-sm">Propietario</th>
-          <th class="px-6 py-3 text-left text-gray-700 uppercase text-sm">Tipo</th>
-          <th class="px-6 py-3 text-left text-gray-700 uppercase text-sm">Asientos 1º Piso</th>
-          <th class="px-6 py-3 text-left text-gray-700 uppercase text-sm">Asientos 2º Piso</th>
-          <th class="px-6 py-3 text-left text-gray-700 uppercase text-sm">Tipo Asiento</th>
-          <th class="px-6 py-3 text-left text-gray-700 uppercase text-sm">Chofer</th>
-          <th class="px-6 py-3 text-left text-gray-700 uppercase text-sm">Acciones</th>
+          <th colspan="9" class="text-2xl font-bold text-black text-left">
+            <div class="flex justify-between items-center w-full">
+              <h2>Administración de Buses</h2>
+            </div>
+          </th>
+        </tr>
+        <tr>
+          <th colspan="7" class="px-6 py-2 bg-white">
+
+          </th>
+        </tr>
+        <tr class="text-left bg-gray-200 text-black uppercase text-sm leading-normal">
+          <th class="px-6 py-3">Código</th>
+          <th class="px-6 py-3">Placa</th>
+          <th class="px-6 py-3">Propietario</th>
+          <th class="px-6 py-3">Tipo</th>
+          <th class="px-6 py-3">Asientos 1º Piso</th>
+          <th class="px-6 py-3">Asientos 2º Piso</th>
+          <th class="px-6 py-3">Tipo Asiento</th>
+          <th class="px-6 py-3">Chofer</th>
+          <th class="px-6 py-3">Acciones</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="text-gray-700 text-sm border border-gray-200">
         @forelse($buses as $bus)
-          <tr class="border-t hover:bg-gray-50">
-            <td class="px-6 py-4 text-gray-800">{{ $bus->codigo }}</td>
-            <td class="px-6 py-4 text-gray-800">{{ $bus->placa }}</td>
-            <td class="px-6 py-4 text-gray-800">{{ $bus->propietario }}</td>
-            <td class="px-6 py-4 text-gray-800">{{ $bus->tipo_de_bus }}</td>
-            <td class="px-6 py-4 text-gray-800">{{ $bus->asientos_piso1 }}</td>
-            <td class="px-6 py-4 text-gray-800">{{ $bus->asientos_piso2 }}</td>
-            <td class="px-6 py-4 text-gray-800">{{ $bus->tipo_asiento }}</td>
-            <td class="px-6 py-4 text-gray-800">{{ optional($bus->chofer)->nombre_chofer ?? '—' }}</td>
+          <tr class="border-b border-gray-200 hover:bg-gray-50">
+            <td class="px-6 py-4">{{ $bus->codigo }}</td>
+            <td class="px-6 py-4">{{ $bus->placa }}</td>
+            <td class="px-6 py-4">{{ $bus->propietario }}</td>
+            <td class="px-6 py-4">{{ $bus->tipo_de_bus }}</td>
+            <td class="px-6 py-4">{{ $bus->asientos_piso1 }}</td>
+            <td class="px-6 py-4">{{ $bus->asientos_piso2 }}</td>
+            <td class="px-6 py-4">{{ $bus->tipo_asiento }}</td>
+            <td class="px-6 py-4">{{ optional($bus->chofer)->nombre_chofer ?? '—' }}</td>
             <td class="px-6 py-4 space-x-2">
-              <a href="{{ route('buses.show', $bus) }}"
-                 class="text-green-600 hover:text-green-800 font-medium">Ver</a>
-              <a href="{{ route('buses.edit', $bus) }}"
-                 class="text-indigo-600 hover:text-indigo-800 font-medium">Editar</a>
+              <a href="{{ route('buses.show', $bus) }}" class="text-indigo-600 hover:underline">Ver</a>
+              <a href="{{ route('buses.edit', $bus) }}" class="text-yellow-600 hover:underline">Editar</a>
               <form action="{{ route('buses.destroy', $bus) }}" method="POST" class="inline">
                 @csrf @method('DELETE')
                 <button type="submit"
-                        class="text-red-600 hover:text-red-800 font-medium"
-                        onclick="return confirm('¿Eliminar este bus?')">
+                        onclick="return confirm('¿Eliminar este bus?')"
+                        class="text-red-600 hover:underline">
                   Eliminar
                 </button>
               </form>
@@ -61,12 +71,18 @@
           </tr>
         @empty
           <tr>
-            <td colspan="8" class="px-6 py-4 text-center text-gray-600">
+            <td colspan="9" class="px-6 py-4 text-center text-gray-500">
               No hay buses registrados.
             </td>
           </tr>
         @endforelse
       </tbody>
     </table>
+
+    @if(method_exists($buses, 'links'))
+      <div class="mt-4">
+        {{ $buses->withQueryString()->links() }}
+      </div>
+    @endif
   </div>
 @endsection

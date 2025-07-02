@@ -77,4 +77,12 @@ class Ruta extends Model
         $this->paradas = $paradas;
         return $this;
     }
+    public function viajes()
+    {
+        return $this->hasMany(\App\Models\Viaje::class);
+    }
+    public function paradas()
+    {
+        return $this->hasMany(Parada::class, 'ruta_id');
+    }
 }

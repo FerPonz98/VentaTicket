@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ruta;
+use App\Models\Viaje; // Asegúrate de importar el modelo Viaje
 use Illuminate\Http\Request;
 
 class RutaController extends Controller
@@ -26,17 +27,15 @@ class RutaController extends Controller
         $paradasInput = $data['paradas'] ?? [];
         unset($data['paradas']);
 
-        // Crear ruta con precios de encomienda y carga
         $ruta = Ruta::create($data);
 
-        // Agregar paradas con todos los precios (hora opcional)
         foreach ($paradasInput as $p) {
             $ruta->addParada(
-                $p['nombre'],                   // nombre
-                (float)$p['precio_pasaje'],     // precio pasaje
-                (float)$p['precio_encomienda_parada'], // precio encomienda
-                (float)$p['precio_carga_parada'],      // precio carga
-                $p['hora'] ?? null              // hora (puede ser null)
+                $p['nombre'],                   
+                (float)$p['precio_pasaje'],     
+                (float)$p['precio_encomienda_parada'], 
+                (float)$p['precio_carga_parada'],      
+                $p['hora'] ?? null              
             );
         }
         $ruta->save();
@@ -65,15 +64,14 @@ class RutaController extends Controller
 
         $ruta->update($data);
 
-        // Reemplazar paradas
         $ruta->paradas = [];
         foreach ($paradasInput as $p) {
             $ruta->addParada(
-                $p['nombre'],                   // nombre
-                (float)$p['precio_pasaje'],     // precio pasaje
-                (float)$p['precio_encomienda_parada'], // precio encomienda
-                (float)$p['precio_carga_parada'],      // precio carga
-                $p['hora'] ?? null              // hora (opcional)
+                $p['nombre'],                   
+                (float)$p['precio_pasaje'],     
+                (float)$p['precio_encomienda_parada'], 
+                (float)$p['precio_carga_parada'],      
+                $p['hora'] ?? null          
             );
         }
         $ruta->save();
@@ -122,5 +120,16 @@ class RutaController extends Controller
             'paradas.*.precio_carga_parada'  => 'required_with:paradas|numeric|min:0',
             'paradas.*.hora'                 => 'nullable|date_format:H:i',
         ]);
+    }
+
+    public function filterViajes(Request $request)
+    {
+        $rutas = Ruta::all(); 
+        $viajesHoy = Viaje::with(['bus', 'ruta', 'pasajes'])
+            ->when($request->input('fecha'), fn($q) => $q->whereDate('fecha_salida', $request->input('fecha')))
+            ->when($request->input('ruta'), fn($q) => $q->where('ruta_id', $request->input('ruta')))
+            ->get();
+
+        return view('pasajes.index', compact('viajesHoy', 'fecha', 'rutas'));
     }
 }

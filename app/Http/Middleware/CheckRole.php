@@ -18,18 +18,18 @@ class CheckRole
      */
     public function handle(Request $request, Closure $next, ...$roles)
     {
-        // Si no está autenticado, redirigir a login
         if (!Auth::check()) {
-            return redirect()->route('login');
+            return redirect()->route('login')->with('error', 'Necesitas iniciar sesión.');
         }
-
+        
         $user = Auth::user();
 
-        // Si el rol del usuario NO está en la lista de roles permitidos
         if (!in_array($user->rol, $roles)) {
-            abort(403); // Muestra errors/403.blade.php
+         
+            return redirect()->route('lobby')->with('error', 'No tienes acceso a esta página.');
         }
 
         return $next($request);
     }
 }
+

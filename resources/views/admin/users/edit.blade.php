@@ -22,16 +22,19 @@
           method="POST"
           enctype="multipart/form-data">
       @csrf
-      @method('PATCH')
+      @method('PUT')
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-900">
         {{-- CI --}}
         <div>
           <label class="block font-medium mb-1">CI</label>
-          <input type="text"
-                 value="{{ $usuario->ci_usuario }}"
-                 readonly
-                 class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2 cursor-not-allowed"/>
+          <input
+            type="text"
+            name="ci_usuario"
+            value="{{ $usuario->ci_usuario }}"
+            readonly
+            class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2 text-gray-700"
+          />
         </div>
 
         {{-- Nombre de usuario --}}
@@ -149,14 +152,15 @@
                   class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2">
             <option value="">-- Seleccione --</option>
             @foreach([
-              'admin'=>'Admin',
-              'supervisor gral'=>'Supervisor Gral',
-              'supervisor suc'=>'Supervisor SUC',
-              'cajero'=>'Cajero',
-              'ventas qr'=>'Ventas QR',
-              'carga'=>'Carga',
-              'encomienda'=>'Encomienda',
-              'chofer y ayudante'=>'Chofer y Ayudante'
+              'admin' => 'Admin',
+              'supervisor gral' => 'Supervisor Gral',
+              'supervisor suc' => 'Supervisor SUC',
+              'cajero' => 'Cajero',
+              'ventas qr' => 'Ventas QR',
+              'carga' => 'Carga',
+              'encomienda' => 'Encomienda',
+              'chofer' => 'Chofer',
+              'ayudante' => 'Ayudante'
             ] as $key => $label)
               <option value="{{ $key }}" {{ old('rol',$usuario->rol)==$key?'selected':'' }}>
                 {{ $label }}
@@ -180,7 +184,7 @@
           @if($usuario->foto)
             <div class="flex items-center space-x-4 mb-2">
               <img src="{{ asset('storage/'.$usuario->foto) }}"
-                   alt="Foto" class="w-24 h-24 object-cover rounded-full border">
+                   alt="Foto" class="w-32 h-32 object-cover rounded-full border">
               <label class="inline-flex items-center">
                 <input type="checkbox"
                        name="remove_foto"
@@ -205,7 +209,7 @@
               <div class="flex items-center justify-between mb-1">
                 <a href="{{ asset('storage/'.$usuario["documento_$i"]) }}"
                    target="_blank"
-                   class="text-gray-900 hover:underline">
+                   class="text-blue-500 hover:underline">
                   Ver documento {{ $i }}
                 </a>
                 <label class="inline-flex items-center">

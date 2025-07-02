@@ -37,6 +37,8 @@ class Bus extends Model
         'modelo',
         'propietario',
         'chofer_id',
+        'layout_piso1',
+        'layout_piso2',
     ];
 
     protected $casts = [
@@ -51,6 +53,8 @@ class Bus extends Model
         'soat_vencimiento'  => 'date',
         'rev_tecnica_vencimiento' => 'date',
         'tarjeta_operacion_vencimiento' => 'date',
+        'layout_piso1' => 'array',
+        'layout_piso2' => 'array',
     ];
 
     public function viajes()

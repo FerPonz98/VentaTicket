@@ -4,32 +4,55 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\EncomiendaItem;
+use App\Models\Viaje;
+use App\Models\User;
 
 class Encomienda extends Model
 {
     use HasFactory;
 
+    protected $table = 'encomiendas';
+
     protected $fillable = [
-        'ruta_id',
-        'origen_id',
-        'destino_id',
-        'peso',
-        'precio',
-        // añade aquí campos extra (volumen, descripción, etc.)
+        'guia_numero',
+        'estado',
+        'viaje_id',
+        'horario',
+        'fecha',
+        'hora_recepcion',
+        'remitente_id',
+        'remitente_nombre',
+        'remitente_telefono',
+        'consignatario_nombre',
+        'consignatario_ci',
+        'consignatario_telefono',
+        'cajero_id',
     ];
 
-    public function ruta()
+    protected $casts = [
+        'horario'        => 'datetime:H:i',
+        'hora_recepcion' => 'datetime:H:i',
+        'fecha'          => 'date',
+    ];
+
+    public function viaje(): BelongsTo
     {
-        return $this->belongsTo(Ruta::class);
+        return $this->belongsTo(Viaje::class);
     }
 
-    public function origenStop()
+    public function items(): HasMany
     {
-        return $this->belongsTo(Stop::class, 'origen_id');
+        return $this->hasMany(EncomiendaItem::class);
     }
-
-    public function destinoStop()
+    public function cajero(): BelongsTo
     {
-        return $this->belongsTo(Stop::class, 'destino_id');
+        return $this->belongsTo(User::class, 'cajero_id', 'ci_usuario');
+    }
+    public function turno()
+    {
+        return $this->belongsTo(Turno::class);
     }
 }

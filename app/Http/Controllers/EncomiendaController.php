@@ -3,94 +3,162 @@
 namespace App\Http\Controllers;
 
 use App\Models\Encomienda;
-use App\Models\Ruta;
+use App\Models\EncomiendaItem;
+use App\Models\Viaje;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class EncomiendaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $encomiendas = Encomienda::with(['ruta','origenStop','destinoStop'])->paginate(15);
+        $query = Encomienda::with(['viaje.bus', 'cajero', 'items'])
+            ->when($request->query('encomienda_id'), fn($q, $id) =>
+                $q->where('id', $id)
+            )
+            ->orderByDesc('created_at');
+
+        $encomiendas = $query->paginate(10)->withQueryString();
+
         return view('encomiendas.index', compact('encomiendas'));
     }
 
     public function create()
     {
-        $rutas = Ruta::with('stops')->get();
-        return view('encomiendas.create', compact('rutas'));
+        $viajes = Viaje::with(['ruta', 'bus'])
+                       ->orderBy('fecha_salida')
+                       ->get();
+
+        return view('encomiendas.create', compact('viajes'));
     }
 
     public function store(Request $request)
     {
-        $v = $request->validate([
-            'ruta_id'    => 'required|exists:rutas,id',
-            'origen_id'  => 'required|exists:stops,id',
-            'destino_id' => 'required|exists:stops,id',
-            'peso'       => 'required|numeric|min:0',
-            'precio'     => 'required|numeric|min:0',
+        $data = $request->validate([
+            'viaje_id'               => 'required|exists:viajes,id',
+            'fecha'                  => 'required|date',
+            'horario'                => 'required|date_format:H:i',
+            'hora_recepcion'         => 'required|date_format:H:i',
+            'estado'                 => 'required|in:por_pagar,pagado',
+            'cajero_id'              => 'required|exists:usuarios,ci_usuario',
+
+            'remitente_id'           => 'required|string|max:50',
+            'remitente_nombre'       => 'required|string|max:255',
+            'remitente_telefono'     => 'required|string|max:20',
+
+            'consignatario_nombre'   => 'required|string|max:255',
+            'consignatario_ci'       => 'required|string|max:50',
+            'consignatario_telefono' => 'required|string|max:20',
+
+            'items'                  => 'required|array|min:1',
+            'items.*.cantidad'       => 'required|integer|min:1',
+            'items.*.descripcion'    => 'required|string',
+            'items.*.peso'           => 'required|numeric|min:0.01',
+            'items.*.costo'          => 'required|numeric|min:0',
         ]);
 
-        $stops = Ruta::findOrFail($v['ruta_id'])
-            ->stops()
-            ->orderBy('pivot_sequence')
-            ->get();
-        $origenIdx  = $stops->search(fn($s) => $s->id == $v['origen_id']);
-        $destinoIdx = $stops->search(fn($s) => $s->id == $v['destino_id']);
+        $data['guia_numero']   = 'E'.now()->format('YmdHis');
+        $data['es_carga']      = false;
+        $data['cajero_id']     = Auth::user()->ci_usuario;
 
-        if ($origenIdx === false || $destinoIdx === false || $destinoIdx <= $origenIdx) {
-            return back()->withInput()->withErrors([
-                'destino_id' => 'El destino debe estar después del origen en la misma ruta.'
-            ]);
+        $encomienda = Encomienda::create(Arr::only($data, [
+            'viaje_id','guia_numero','estado','fecha','horario','hora_recepcion',
+            'remitente_id','remitente_nombre','remitente_telefono',
+            'consignatario_nombre','consignatario_ci','consignatario_telefono',
+            'cajero_id','es_carga',
+        ]));
+
+        foreach ($data['items'] as $item) {
+            $encomienda->items()->create($item);
         }
 
-        $encomienda = Encomienda::create($v);
-
-        return redirect()->route('encomiendas.show', $encomienda);
+        return redirect()
+            ->route('encomiendas.index')
+            ->with('success', 'Encomienda creada correctamente.');
     }
 
     public function show(Encomienda $encomienda)
     {
-        $encomienda->load(['ruta','origenStop','destinoStop']);
+        $encomienda->load(['viaje.ruta', 'viaje.bus', 'cajero', 'items']);
         return view('encomiendas.show', compact('encomienda'));
     }
 
     public function edit(Encomienda $encomienda)
     {
-        $rutas = Ruta::with('stops')->get();
-        return view('encomiendas.edit', compact('encomienda','rutas'));
+        $viajes = Viaje::with(['ruta','bus'])
+                       ->orderBy('fecha_salida')
+                       ->get();
+        $encomienda->load('items');
+        return view('encomiendas.edit', compact('encomienda','viajes'));
     }
 
     public function update(Request $request, Encomienda $encomienda)
     {
-        $v = $request->validate([
-            'ruta_id'    => 'required|exists:rutas,id',
-            'origen_id'  => 'required|exists:stops,id',
-            'destino_id' => 'required|exists:stops,id',
-            'peso'       => 'required|numeric|min:0',
-            'precio'     => 'required|numeric|min:0',
+        $data = $request->validate([
+            'viaje_id'               => 'required|exists:viajes,id',
+            'fecha'                  => 'required|date',
+            'horario'                => 'required|date_format:H:i',
+            'hora_recepcion'         => 'required|date_format:H:i',
+            'estado'                 => 'required|in:por_pagar,pagado',
+
+            'remitente_id'           => 'required|string|max:50',
+            'remitente_nombre'       => 'required|string|max:255',
+            'remitente_telefono'     => 'required|string|max:20',
+
+            'consignatario_nombre'   => 'required|string|max:255',
+            'consignatario_ci'       => 'required|string|max:50',
+            'consignatario_telefono' => 'required|string|max:20',
+
+            'items'                  => 'required|array|min:1',
+            'items.*.cantidad'       => 'required|integer|min:1',
+            'items.*.descripcion'    => 'required|string',
+            'items.*.peso'           => 'required|numeric|min:0.01',
+            'items.*.costo'          => 'required|numeric|min:0',
         ]);
 
-        $stops = Ruta::findOrFail($v['ruta_id'])
-            ->stops()
-            ->orderBy('pivot_sequence')
-            ->get();
-        $origenIdx  = $stops->search(fn($s) => $s->id == $v['origen_id']);
-        $destinoIdx = $stops->search(fn($s) => $s->id == $v['destino_id']);
+        $encomienda->update(Arr::only($data, [
+            'viaje_id','estado','fecha','horario','hora_recepcion',
+            'remitente_id','remitente_nombre','remitente_telefono',
+            'consignatario_nombre','consignatario_ci','consignatario_telefono'
+        ]));
 
-        if ($origenIdx === false || $destinoIdx === false || $destinoIdx <= $origenIdx) {
-            return back()->withInput()->withErrors([
-                'destino_id' => 'El destino debe estar después del origen en la misma ruta.'
-            ]);
+        $encomienda->items()->delete();
+        foreach ($data['items'] as $item) {
+            $encomienda->items()->create($item);
         }
 
-        $encomienda->update($v);
-
-        return redirect()->route('encomiendas.show', $encomienda);
+        return redirect()
+            ->route('encomiendas.index')
+            ->with('success', 'Encomienda actualizada correctamente.');
     }
 
     public function destroy(Encomienda $encomienda)
     {
+        $encomienda->items()->delete();
         $encomienda->delete();
-        return redirect()->route('encomiendas.index');
+
+        return redirect()
+            ->route('encomiendas.index')
+            ->with('success', 'Encomienda eliminada correctamente.');
     }
+    public function pdf(Encomienda $encomienda)
+    {
+        $encomienda->load([
+            'cajero',
+            'items',
+            'viaje.bus',
+            'viaje.ruta',
+        ]);
+    
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('encomiendas.pdf', compact('encomienda'))
+            ->setPaper([0, 0, 226.77, 841.89], 'portrait');
+
+        return $pdf->stream("Encomienda_{$encomienda->guia_numero}.pdf");
+    }
+    
+    
+
 }

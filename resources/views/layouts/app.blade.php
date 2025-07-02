@@ -16,12 +16,18 @@
     <nav class="flex-1 overflow-y-auto">
       <ul class="space-y-1 px-4">
         @auth
-          @php $rol = Auth::user()->rol; @endphp
+          @php
+            $rol = Auth::user()->rol;
+            // Tomar ruta activa de sesión o si no existe, la primera en BD
+            $rutaId = session('ruta_actual_id') 
+                     ?? \App\Models\Ruta::first()?->id;
+          @endphp
 
           {{-- Dashboard: sólo Admin --}}
           @if(in_array($rol, ['admin']))
             <li><a href="{{ route('dashboard') }}" class="block px-3 py-3 rounded hover:bg-gray-700 text-xl">Dashboard</a></li>
           @endif
+
           {{-- Usuarios: sólo Admin y Supervisores --}}
           @if(in_array($rol, ['admin','supervisor gral','supervisor suc']))
             <li><a href="{{ route('users.index') }}" class="block px-3 py-3 rounded hover:bg-gray-700 text-xl">Usuarios</a></li>
@@ -33,74 +39,47 @@
           @endif
 
           {{-- Carga --}}
-           @if(in_array($rol, ['admin','supervisor gral','supervisor suc','cajero','ventas qr','carga','encomienda']))
-            <li><a href="{{ route('carga.index') }}" class="block px-3 py-3 rounded hover:bg-gray-700 text-xl">Carga</a></li>
-          @endif
+@if(in_array($rol, ['admin','supervisor gral','supervisor suc','cajero','ventas qr','carga']))
+  <li>
+    <a href="{{ route('carga.index') }}"
+       class="block px-3 py-3 rounded hover:bg-gray-700 text-xl">
+      Carga
+    </a>
+  </li>
+@endif
 
-          {{-- Encomiendas --}}
-           @if(in_array($rol, ['admin','supervisor gral','supervisor suc','cajero','ventas qr','carga','encomienda']))
-            <li><a href="{{ route('encomiendas.index') }}" class="block px-3 py-3 rounded hover:bg-gray-700 text-xl">Encomiendas</a></li>
-          @endif
+{{-- Encomiendas --}}
+@if(in_array($rol, ['admin','supervisor gral','supervisor suc','cajero','ventas qr','encomienda']))
+  <li>
+    <a href="{{ route('encomiendas.index') }}"
+       class="block px-3 py-3 rounded hover:bg-gray-700 text-xl">
+      Encomiendas
+    </a>
+  </li>
+@endif
+{{-- Turnos --}}
+@if(in_array($rol, ['admin','supervisor gral','supervisor suc','cajero','ventas qr','encomienda']))
+  <li>
+    <a href="{{ route('turnos.index') }}" class="block px-3 py-3 rounded hover:bg-gray-700 text-xl">
+      Turnos
+    </a>
+  </li>
+@endif
 
           {{-- Kardex --}}
-          @if($rol === 'chofer y ayudante')
+          @if(in_array($rol, ['chofer','ayudante']))
             <li><a href="{{ route('kardex.index') }}" class="block px-3 py-3 rounded hover:bg-gray-700 text-xl">Kardex</a></li>
           @endif
 
-          {{-- Menú Admin/Supervisor Gral con recursos complejos --}}
-          @if(in_array($rol, ['admin','supervisor gral']))
+          @if(in_array($rol, ['admin','supervisor gral','supervisor suc']))
             {{-- Buses --}}
-            <li x-data="{ open: false }" class="group">
-              <button @click="open = !open" class="w-full flex justify-between items-center px-3 py-3 rounded hover:bg-gray-700">
-                <span>Buses</span>
-                <svg :class="{ 'rotate-180': open }" class="h-4 w-4 transition-transform" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M5.23 7.21l4.25 4.25 4.25-4.25"/>
-                </svg>
-              </button>
-              <ul x-show="open" class="mt-1 pl-6 space-y-1">
-                <li><a href="{{ route('buses.index') }}" class="block px-2 py-2 rounded hover:bg-gray-700">Listar Buses</a></li>
-                <li><a href="{{ route('buses.create') }}" class="block px-2 py-2 rounded hover:bg-gray-700">Crear Bus</a></li>
-              </ul>
-            </li>
+            <li><a href="{{ route('buses.index') }}" class="block px-3 py-3 rounded hover:bg-gray-700 text-xl">Buses</a></li>
             {{-- Rutas --}}
-            <li x-data="{ open: false }" class="group">
-              <button @click="open = !open" class="w-full flex justify-between items-center px-3 py-2 rounded hover:bg-gray-700">
-                <span>Rutas </span>
-                <svg :class="{ 'rotate-180': open }" class="h-4 w-4 transition-transform" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M5.23 7.21l4.25 4.25 4.25-4.25"/>
-                </svg>
-              </button>
-              <ul x-show="open" class="mt-1 pl-6 space-y-1">
-                <li><a href="{{ route('rutas.index') }}" class="block px-2 py-1 rounded hover:bg-gray-700">Listar Rutas</a></li>
-                <li><a href="{{ route('rutas.create') }}" class="block px-2 py-1 rounded hover:bg-gray-700">Crear Ruta</a></li>
-              </ul>
-            </li>
+            <li><a href="{{ route('rutas.index') }}" class="block px-3 py-3 rounded hover:bg-gray-700 text-xl">Rutas</a></li>
             {{-- Viajes --}}
-            <li x-data="{ open: false }" class="group">
-              <button @click="open = !open" class="w-full flex justify-between items-center px-3 py-2 rounded hover:bg-gray-700">
-                <span>Viajes</span>
-                <svg :class="{ 'rotate-180': open }" class="h-4 w-4 transition-transform" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M5.23 7.21l4.25 4.25 4.25-4.25"/>
-                </svg>
-              </button>
-              <ul x-show="open" class="mt-1 pl-6 space-y-1">
-                <li><a href="{{ route('viajes.index') }}" class="block px-2 py-1 rounded hover:bg-gray-700">Listar Viajes</a></li>
-                <li><a href="{{ route('viajes.create') }}" class="block px-2 py-1 rounded hover:bg-gray-700">Crear Viaje</a></li>
-              </ul>
-            </li>
+            <li><a href="{{ route('viajes.index') }}" class="block px-3 py-3 rounded hover:bg-gray-700 text-xl">Viajes</a></li>
             {{-- Choferes --}}
-            <li x-data="{ open: false }" class="group">
-              <button @click="open = !open" class="w-full flex justify-between items-center px-3 py-2 rounded hover:bg-gray-700">
-                <span>Choferes</span>
-                <svg :class="{ 'rotate-180': open }" class="h-4 w-4 transition-transform" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M5.23 7.21l4.25 4.25 4.25-4.25"/>
-                </svg>
-              </button>
-              <ul x-show="open" class="mt-1 pl-6 space-y-1">
-                <li><a href="{{ route('choferes.index') }}" class="block px-2 py-1 rounded hover:bg-gray-700">Listar Choferes</a></li>
-                <li><a href="{{ route('choferes.create') }}" class="block px-2 py-1 rounded hover:bg-gray-700">Crear Chofer</a></li>
-              </ul>
-            </li>
+            <li><a href="{{ route('choferes.index') }}" class="block px-3 py-3 rounded hover:bg-gray-700 text-xl">Choferes</a></li>
           @endif
         @endauth
       </ul>
