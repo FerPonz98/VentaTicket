@@ -112,6 +112,42 @@
         @enderror
       </div>
 
+      {{-- Chofer Principal --}}
+      <div>
+        <label for="chofer_id" class="block mb-1 text-gray-700 font-medium">Chofer Principal*</label>
+        <select id="chofer_id" name="chofer_id" required
+                class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900">
+            <option value="">-- Seleccione Chofer --</option>
+            @foreach($choferes as $chofer)
+                <option value="{{ $chofer->CI }}" {{ old('chofer_id', $bus->chofer_id) == $chofer->CI ? 'selected' : '' }}>
+                    {{ $chofer->nombre_chofer }}
+                </option>
+            @endforeach
+        </select>
+        @error('chofer_id')
+          <p class="mt-1 text-red-600 text-sm">{{ $message }}</p>
+        @enderror
+      </div>
+
+      {{-- Chofer Secundario --}}
+      <div>
+        <label for="chofer2_id" class="block mb-1 text-gray-700 font-medium">Chofer Secundario</label>
+        <select id="chofer2_id" name="chofer2_id"
+                class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900">
+            <option value="">-- Seleccione Chofer --</option>
+            @foreach($choferes as $chofer)
+                @if(old('chofer_id', $bus->chofer_id) != $chofer->CI)
+                    <option value="{{ $chofer->CI }}" {{ old('chofer2_id', $bus->chofer2_id) == $chofer->CI ? 'selected' : '' }}>
+                        {{ $chofer->nombre_chofer }}
+                    </option>
+                @endif
+            @endforeach
+        </select>
+        @error('chofer2_id')
+          <p class="mt-1 text-red-600 text-sm">{{ $message }}</p>
+        @enderror
+      </div>
+
       {{-- Botones --}}
       <div class="pt-4 flex gap-4">
         <a href="{{ route('choferes.index') }}"

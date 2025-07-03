@@ -27,9 +27,8 @@ class EncomiendaController extends Controller
 
     public function create()
     {
-        $viajes = Viaje::with(['ruta', 'bus'])
-                       ->orderBy('fecha_salida')
-                       ->get();
+    
+        $viajes = Viaje::whereDate('fecha_salida', '>=', now()->toDateString())->get();
 
         return view('encomiendas.create', compact('viajes'));
     }
@@ -88,6 +87,7 @@ class EncomiendaController extends Controller
     public function edit(Encomienda $encomienda)
     {
         $viajes = Viaje::with(['ruta','bus'])
+                       ->whereDate('fecha_salida', '>=', now()->toDateString())
                        ->orderBy('fecha_salida')
                        ->get();
         $encomienda->load('items');

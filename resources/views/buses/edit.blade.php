@@ -197,6 +197,7 @@
             class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-gray-900"
           />
         </div>
+        {{-- Chofer Principal --}}
         <div>
           <label for="chofer_id" class="block mb-1 text-gray-700 font-medium">Chofer Principal*</label>
           <select
@@ -207,12 +208,13 @@
           >
             <option value="">-- Seleccione Chofer --</option>
             @foreach($choferes as $chofer)
-              <option value="{{ $chofer->id }}" {{ old('chofer_id', $bus->chofer_id) == $chofer->id ? 'selected' : '' }}>
+              <option value="{{ $chofer->CI }}" {{ old('chofer_id', $bus->chofer_id) == $chofer->CI ? 'selected' : '' }}>
                 {{ $chofer->nombre_chofer }}
               </option>
             @endforeach
           </select>
         </div>
+        {{-- Chofer Secundario --}}
         <div>
           <label for="chofer2_id" class="block mb-1 text-gray-700 font-medium">Chofer Secundario (opcional)</label>
           <select
@@ -222,9 +224,11 @@
           >
             <option value="">-- Seleccione Chofer --</option>
             @foreach($choferes as $chofer)
-              <option value="{{ $chofer->id }}" {{ old('chofer2_id', $bus->chofer2_id) == $chofer->id ? 'selected' : '' }}>
-                {{ $chofer->nombre_chofer }}
-              </option>
+              @if(old('chofer_id', $bus->chofer_id) != $chofer->CI)
+                <option value="{{ $chofer->CI }}" {{ old('chofer2_id', $bus->chofer2_id) == $chofer->CI ? 'selected' : '' }}>
+                  {{ $chofer->nombre_chofer }}
+                </option>
+              @endif
             @endforeach
           </select>
         </div>
@@ -320,25 +324,22 @@
 
 <script>
  
-  function genLayout(cnt) {
+  function genLayout(cnt, start = 1) {
   const rows = [];
-  let n = 1;
+  let n = start;
 
   const fullRows = Math.floor(cnt / 4);
   const rem = cnt % 4;
 
   if (cnt > 0 && cnt % 5 === 0) {
- 
     const filasNormales = Math.floor((cnt - 5) / 4);
     for (let i = 0; i < filasNormales; i++) {
       rows.push([String(n++), String(n++), 'aisle', String(n++), String(n++)]);
     }
-  
     const filaFinal = [];
     for (let i = 0; i < 5; i++) filaFinal.push(String(n++));
     rows.push(filaFinal);
   } else {
-
     for (let i = 0; i < fullRows; i++) {
       rows.push([String(n++), String(n++), 'aisle', String(n++), String(n++)]);
     }
@@ -452,9 +453,24 @@
             l1   = JSON.parse(layout1.value) || [],
             l2   = JSON.parse(layout2.value) || [];
 
-      render(1, l1.length ? l1 : genLayout(cnt1), 'grid1');
+      // Render piso 1
+      const layoutPiso1 = l1.length ? l1 : genLayout(cnt1);
+      render(1, layoutPiso1, 'grid1');
+
+      // Calcular el último número de asiento del piso 1
+      let lastNumPiso1 = 0;
+      layoutPiso1.forEach(row => {
+        row.forEach(cell => {
+          if (/^\d+$/.test(cell)) {
+            lastNumPiso1 = Math.max(lastNumPiso1, parseInt(cell));
+          }
+        });
+      });
+
+      // Render piso 2 con numeración continua
       if (tipo.value === 'Doble piso') {
-        render(2, l2.length ? l2 : genLayout(cnt2), 'grid2');
+        const layoutPiso2 = l2.length ? l2 : genLayout(cnt2, lastNumPiso1 + 1);
+        render(2, layoutPiso2, 'grid2');
       }
     }
 
@@ -466,5 +482,28 @@
 
     updateAll();
   });
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const principal = document.getElementById('chofer_id');
+    const secundario = document.getElementById('chofer2_id');
+
+    function filtrarSecundario() {
+        const principalValue = principal.value;
+        Array.from(secundario.options).forEach(opt => {
+            if (opt.value && opt.value === principalValue) {
+                opt.style.display = 'none';
+                if (secundario.value === principalValue) {
+                    secundario.value = '';
+                }
+            } else {
+                opt.style.display = '';
+            }
+        });
+    }
+
+    principal.addEventListener('change', filtrarSecundario);
+    filtrarSecundario(); // Ejecutar al cargar la página
+});
 </script>
 @endsection

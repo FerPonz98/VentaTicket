@@ -71,8 +71,10 @@ class DetalleCarga extends Model
         'descripcion',
         'peso',
     ];
-
-    
+    public function viaje()
+    {
+        return $this->belongsTo(Viaje::class);
+    }
     public function carga()
     {
         return $this->belongsTo(Carga::class);

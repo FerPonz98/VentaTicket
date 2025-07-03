@@ -58,8 +58,8 @@ class Ruta extends Model
     public function addParada(
         string $nombre,
         float $precioPasaje,
-        float $precioEncomiendaParada,
-        float $precioCargaParada,
+       // float $precioEncomiendaParada,
+       // float $precioCargaParada,
         ?string $hora = null
     ) {
         $paradas = $this->paradas ?? [];
@@ -69,8 +69,8 @@ class Ruta extends Model
             'numero'                       => $numero,
             'nombre'                       => $nombre,
             'precio_pasaje'                => $precioPasaje,
-            'precio_encomienda_parada'     => $precioEncomiendaParada,
-            'precio_carga_parada'          => $precioCargaParada,
+        ///    'precio_encomienda_parada'     => $precioEncomiendaParada,
+          //  'precio_carga_parada'          => $precioCargaParada,
             'hora'                         => $hora,
         ];
 
@@ -80,9 +80,5 @@ class Ruta extends Model
     public function viajes()
     {
         return $this->hasMany(\App\Models\Viaje::class);
-    }
-    public function paradas()
-    {
-        return $this->hasMany(Parada::class, 'ruta_id');
     }
 }

@@ -74,29 +74,56 @@ Route::middleware(['auth', 'rol:admin,supervisor gral'])
     ->resource('rutas', RutaController::class)
     ->parameters(['rutas' => 'ruta']);
 
-Route::middleware(['auth', 'rol:admin,supervisor gral,supervisor suc,cajero,ventas qr,carga,encomienda'])
+    Route::middleware(['auth', 'rol:admin,supervisor gral,supervisor suc,cajero,ventas qr,carga,encomienda'])
     ->group(function() {
-        Route::get('pasajes', [PasajeController::class, 'index'])->name('pasajes.index');
-        Route::get('pasajes/create', [PasajeController::class, 'create'])->name('pasajes.create');
-        Route::post('pasajes', [PasajeController::class, 'store'])->name('pasajes.store');
-        Route::get('pasajes/confirmar', [PasajeController::class, 'confirmar'])->name('pasajes.confirmar');
-        Route::get('pasajes/finalizar', [PasajeController::class, 'finalizar'])->name('pasajes.finalizar');
-        Route::get('pasajes/{pasaje}', [PasajeController::class, 'show'])->name('pasajes.show');
-        Route::put('pasajes/{pasaje}', [PasajeController::class, 'update'])->name('pasajes.update');
-        Route::delete('pasajes/{pasaje}', [PasajeController::class, 'destroy'])->name('pasajes.destroy');
-        Route::get('pasajes/{pasaje}/ticket', [PasajeController::class, 'ticket'])->name('pasajes.ticket');
-        Route::get('pasajes/{viaje}/disponibilidad', [PasajeController::class, 'disponibilidad'])->name('pasajes.disponibilidad');
-        Route::get('pasajes/viajes-por-fecha', [PasajeController::class, 'viajesPorFecha'])->name('pasajes.viajesPorFecha');
-        Route::get('pasajes/vendidos/{viaje}', [PasajeController::class, 'verVendidosPorViaje'])->name('pasajes.vendidosPorViaje');
-        Route::post('viajes/{viaje}/cerrar', [PasajeController::class, 'cerrarViaje'])->name('viajes.cerrar');
-        Route::get('viajes/{viaje}/plantilla', [PasajeController::class, 'plantilla'])->name('viajes.plantilla');
-        Route::get('pasajes/paso1', [PasajeController::class, 'paso1'])->name('pasajes.paso1');
-    });
+
+   Route::get('pasajes',                            [PasajeController::class, 'index'])          ->name('pasajes.index');
+   Route::get('pasajes/create',                     [PasajeController::class, 'create'])         ->name('pasajes.create');
+   Route::post('pasajes',                           [PasajeController::class, 'store'])          ->name('pasajes.store');
+   Route::get('pasajes/confirmar',                  [PasajeController::class, 'confirmar'])      ->name('pasajes.confirmar');
+   Route::get('pasajes/finalizar',                  [PasajeController::class, 'finalizar'])      ->name('pasajes.finalizar');
+
+   Route::get('pasajes/{viaje}/disponibilidad',     [PasajeController::class, 'disponibilidad'])
+        ->whereNumber('viaje')
+        ->name('pasajes.disponibilidad');
+        Route::get('viajes/{viaje}/cierre',      [PasajeController::class, 'cierre'])
+        ->whereNumber('viaje')
+        ->name('viajes.cierre');
+   Route::post('viajes/{viaje}/cerrar',     [PasajeController::class, 'cerrar'])
+        ->whereNumber('viaje')
+        ->name('viajes.cerrar');
+
+   Route::get('viajes/{viaje}/plantilla',   [PasajeController::class, 'plantilla'])
+        ->whereNumber('viaje')
+        ->name('viajes.plantilla');
+
+
+   Route::get('pasajes/{pasaje}',                   [PasajeController::class, 'show'])
+        ->whereNumber('pasaje')
+        ->name('pasajes.show');
+   Route::put('pasajes/{pasaje}',                   [PasajeController::class, 'update'])
+        ->whereNumber('pasaje')
+        ->name('pasajes.update');
+   Route::delete('pasajes/{pasaje}',                [PasajeController::class, 'destroy'])
+        ->whereNumber('pasaje')
+        ->name('pasajes.destroy');
+   Route::get('pasajes/{pasaje}/ticket',            [PasajeController::class, 'ticket'])
+        ->whereNumber('pasaje')
+        ->name('pasajes.ticket');
+
+   Route::get('pasajes/viajes-por-fecha',           [PasajeController::class, 'viajesPorFecha'])
+        ->name('pasajes.viajesPorFecha');
+   Route::get('pasajes/vendidos/{viaje}',           [PasajeController::class, 'verVendidosPorViaje'])
+        ->whereNumber('viaje')
+        ->name('pasajes.vendidosPorViaje');
+});
+
 
 Route::middleware(['auth', 'rol:admin,supervisor gral,supervisor suc,cajero,ventas qr,carga,encomienda'])
     ->group(function() {
         Route::resource('carga', CargaController::class)->only(['index', 'create', 'show', 'edit']);
         Route::post('carga', [CargaController::class, 'store'])->name('carga.store');
+        Route::put('carga/{carga}', [CargaController::class, 'update'])->name('carga.update');
         Route::get('carga/{carga}/pdf', [CargaController::class, 'pdf'])->name('carga.pdf');
     });
 

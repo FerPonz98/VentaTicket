@@ -71,7 +71,7 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const precios = @json($precios); // precios_bus_normal por id de ruta
+      const precios = @json($precios); 
       const rutaSelect = document.querySelector('select[name="ruta_id"]');
       const precioInput = document.querySelector('input[name="precio"]');
 

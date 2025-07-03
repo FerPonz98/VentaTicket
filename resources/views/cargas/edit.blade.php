@@ -34,7 +34,7 @@
             return [$viaje->id => [
                 'paradas' => $paradas,
                 'destino' => $viaje->ruta->destino,
-                'salida'  => $viaje->fecha_salida->format('H:i'),
+                'salida'  => \Carbon\Carbon::parse($viaje->fecha_salida)->format('H:i'),
             ]];
         })->toArray();
       @endphp
@@ -77,7 +77,7 @@
                 <option value="{{ $viaje->id }}"
                         data-origen="{{ $viaje->ruta->origen }}"
                         {{ old('viaje_id', $carga->viaje_id)==$viaje->id ? 'selected' : '' }}>
-                  {{ $viaje->ruta->origen }} → {{ $viaje->ruta->destino }} ({{ $viaje->bus->codigo }}) {{ $viaje->fecha_salida->format('Y-m-d H:i') }}
+                  {{ $viaje->ruta->origen }} → {{ $viaje->ruta->destino }} ({{ $viaje->bus->codigo }}) {{ \Carbon\Carbon::parse($viaje->fecha_salida)->format('Y-m-d H:i') }}
                 </option>
               @endforeach
             </select>
@@ -187,7 +187,7 @@
         horarioInput.value = data.salida || '';
         @foreach($viajes as $viaje)
           if (id == '{{ $viaje->id }}') {
-            fechaInput.value = '{{ $viaje->fecha_salida->toDateString() }}';
+            fechaInput.value = '{{ \Carbon\Carbon::parse($viaje->fecha_salida)->toDateString() }}';
           }
         @endforeach
 

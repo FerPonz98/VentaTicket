@@ -10,8 +10,6 @@
 </a>
 <div class="max-w-6xl mx-auto">
 
- 
-
   <h2 class="text-3xl font-bold mb-6 text-gray-800">Confirmar Venta de Pasaje</h2>
 
   @if(empty($datos['asiento']))
@@ -29,6 +27,8 @@
         <thead class="bg-gray-100">
           <tr>
             <th class="px-4 py-3 text-left text-gray-600">Asiento</th>
+            <th class="px-4 py-3 text-left text-gray-600">CI</th>
+            <th class="px-4 py-3 text-left text-gray-600">Edad</th>
             <th class="px-4 py-3 text-left text-gray-600">Nombre</th>
             <th class="px-4 py-3 text-left text-gray-600">Tipo</th>
             <th class="px-4 py-3 text-left text-gray-600">Origen</th>
@@ -78,11 +78,15 @@
           @endphp
           <tr class="border-t">
             <td class="px-4 py-3 text-gray-800">{{ $datos['asiento'] }}</td>
+            <td class="px-4 py-3 text-gray-800">{{ $datos['ci_usuario'] }}</td>
+            <td class="px-4 py-3 text-gray-800">{{ $datos['edad'] }}</td>
             <td class="px-4 py-3 text-gray-800">{{ $datos['nombre_completo'] }}</td>
             <td class="px-4 py-3 text-gray-800">{{ ucfirst($datos['tipo_pasajero']) }}</td>
             <td class="px-4 py-3 text-gray-800">{{ $viaje->ruta->origen }}</td>
             <td class="px-4 py-3 text-gray-800">{{ $datos['destino'] }}</td>
-            <td class="px-4 py-3 text-gray-800">{{ $viaje->fecha_salida->format('Y-m-d H:i') }}</td>
+            <td class="px-4 py-3 text-gray-800">
+              {{ \Carbon\Carbon::parse($viaje->fecha_salida)->format('Y-m-d H:i') }}
+            </td>
             <td class="px-4 py-3 text-gray-800">{{ ucfirst($datos['forma_pago']) }}</td>
             <td class="px-4 py-3 text-gray-800">Bs {{ number_format($precio,2) }}</td>
           </tr>

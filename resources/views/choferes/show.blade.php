@@ -24,6 +24,10 @@
       <p class="mt-1 text-gray-900">{{ $chofer->nombre_chofer }}</p>
     </div>
     <div>
+      <label class="block text-gray-700 font-medium">CI:</label>
+      <p class="mt-1 text-gray-900">{{ $chofer->ci }}</p>
+    </div>
+    <div>
       <label class="block text-gray-700 font-medium">Licencia:</label>
       <p class="mt-1 text-gray-900">{{ $chofer->licencia }}</p>
     </div>

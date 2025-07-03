@@ -44,81 +44,51 @@
 
       {{-- Tarifas y Recargos --}}
       <div class="grid grid-cols-2 gap-4">
-        <!-- Precio Bus Normal -->
+  
         <div>
           <label class="block mb-1 text-black font-medium">Precio Bus Normal*</label>
           <input name="precio_bus_normal" type="number" step="0.01" min="0" value="{{ old('precio_bus_normal',0) }}" required
                  class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-black">
           @error('precio_bus_normal')<p class="mt-1 text-red-600 text-sm">{{ $message }}</p>@enderror
         </div>
-        <!-- Recargo Un Piso Semicama -->
+ 
         <div>
           <label class="block mb-1 text-black font-medium">Recargo Un Piso Semicama*</label>
           <input name="recargo_bus_1piso_ac" type="number" step="0.01" min="0" value="{{ old('recargo_bus_1piso_ac',0) }}" required
                  class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-black">
           @error('recargo_bus_1piso_ac')<p class="mt-1 text-red-600 text-sm">{{ $message }}</p>@enderror
         </div>
-        <!-- Recargo Doble Semicama -->
+    
         <div>
           <label class="block mb-1 text-black font-medium">Recargo Doble Semicama*</label>
           <input name="recargo_bus_doble_piso" type="number" step="0.01" min="0" value="{{ old('recargo_bus_doble_piso',0) }}" required
                  class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-black">
           @error('recargo_bus_doble_piso')<p class="mt-1 text-red-600 text-sm">{{ $message }}</p>@enderror
         </div>
-        <!-- Descuento 3ra Edad -->
+      
         <div>
           <label class="block mb-1 text-black font-medium">Descuento 3ra Edad*</label>
           <input name="descuento_3ra_edad" type="number" step="0.01" min="0" value="{{ old('descuento_3ra_edad',0) }}" required
                  class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-black">
           @error('descuento_3ra_edad')<p class="mt-1 text-red-600 text-sm">{{ $message }}</p>@enderror
         </div>
-        <!-- Precio Cortesía -->
+  
         <div>
           <label class="block mb-1 text-black font-medium">Precio Cortesía*</label>
           <input name="precio_cortesia" type="number" step="0.01" min="0" value="{{ old('precio_cortesia',0) }}" required
                  class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-black">
           @error('precio_cortesia')<p class="mt-1 text-red-600 text-sm">{{ $message }}</p>@enderror
         </div>
-        <!-- Descuento Discapacidad -->
+  
         <div>
           <label class="block mb-1 text-black font-medium">Descuento Discapacidad*</label>
           <input name="descuento_discapacidad" type="number" step="0.01" min="0" value="{{ old('descuento_discapacidad',0) }}" required
                  class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-black">
           @error('descuento_discapacidad')<p class="mt-1 text-red-600 text-sm">{{ $message }}</p>@enderror
         </div>
-        <!-- Descuento 2 -->
-        <div>
-          <label class="block mb-1 text-black font-medium">Descuento 2</label>
-          <input name="descuento_2" type="number" step="0.01" min="0" value="{{ old('descuento_2',0) }}"
-                 class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-black">
-          @error('descuento_2')<p class="mt-1 text-red-600 text-sm">{{ $message }}</p>@enderror
-        </div>
-        <!-- Descuento 3 -->
-        <div>
-          <label class="block mb-1 text-black font-medium">Descuento 3</label>
-          <input name="descuento_3" type="number" step="0.01" min="0" value="{{ old('descuento_3',0) }}"
-                 class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-black">
-          @error('descuento_3')<p class="mt-1 text-red-600 text-sm">{{ $message }}</p>@enderror
-        </div>
+       
       </div>
 
-      {{-- Precio de Encomienda y Carga --}}
-<div class="grid grid-cols-2 gap-4">
-  <div>
-    <label class="block mb-1 text-black font-medium">Precio Encomienda (Bs.)*</label>
-    <input name="precio_encomienda" type="number" step="0.01" min="0"
-           value="{{ old('precio_encomienda',0) }}" required
-           class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-black">
-    @error('precio_encomienda')<p class="mt-1 text-red-600 text-sm">{{ $message }}</p>@enderror
-  </div>
-  <div>
-    <label class="block mb-1 text-black font-medium">Precio Carga (Bs.)*</label>
-    <input name="precio_carga" type="number" step="0.01" min="0"
-           value="{{ old('precio_carga',0) }}" required
-           class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:ring-2 focus:ring-indigo-500 text-black">
-    @error('precio_carga')<p class="mt-1 text-red-600 text-sm">{{ $message }}</p>@enderror
-  </div>
-</div>
 
    {{-- Paradas Dinámicas --}}
       <div>
@@ -130,8 +100,6 @@
                 <th class="p-2 border text-gray-900">#</th>
                 <th class="p-2 border text-gray-600">Parada</th>
                 <th class="p-2 border text-gray-600">Precio Pasaje</th>
-                <th class="p-2 border text-gray-600">Encomienda (Bs.)</th>
-                <th class="p-2 border text-gray-600">Carga (Bs.)</th>
                 <th class="p-2 border text-center text-gray-600">Acción</th>
               </tr>
             </thead>
@@ -156,8 +124,6 @@
       <td class="p-2 text-center text-gray-900 row-index">1</td>
       <td class="p-2"><input type="text" name="paradas[0][nombre]" required class="w-full bg-gray-50 border border-gray-300 rounded px-2 py-1 text-black"></td>
       <td class="p-2"><input type="number" name="paradas[0][precio_pasaje]" step="0.01" min="0" required class="w-full bg-gray-50 border border-gray-300 rounded px-2 py-1 text-black"></td>
-      <td class="p-2"><input type="number" name="paradas[0][precio_encomienda_parada]" step="0.01" min="0" required class="w-full bg-gray-50 border border-gray-300 rounded px-2 py-1 text-black"></td>
-      <td class="p-2"><input type="number" name="paradas[0][precio_carga_parada]" step="0.01" min="0" required class="w-full bg-gray-50 border border-gray-300 rounded px-2 py-1 text-black"></td>
       <td class="p-2 text-center"><button type="button" class="remove-row px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700">Eliminar</button></td>
     </tr>
   </template>

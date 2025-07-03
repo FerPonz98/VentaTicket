@@ -49,9 +49,8 @@
                     <li class="text-gray-900">
                       <strong>{{ $p['numero'] }}.</strong> {{ $p['nombre'] }}
                       — Bs {{ number_format($p['precio_pasaje'] ?? 0, 2) }}
-                      @isset($p['precio_encomienda_parada']) | Encomienda: Bs {{ number_format($p['precio_encomienda_parada'], 2) }} @endisset
-                      @isset($p['precio_carga_parada']) | Carga: Bs {{ number_format($p['precio_carga_parada'], 2) }} @endisset
-                      @if(!empty($p['hora'])) | Hora: {{ \Carbon\Carbon::createFromFormat('H:i', $p['hora'])->format('H:i') }} @endif
+                      @isset($p['precio_encomienda_parada']) @endisset
+                
                     </li>
                   @endforeach
                 </ul>

@@ -30,7 +30,10 @@ class CargaController extends Controller
 
     public function create()
     {
-        $viajes = Viaje::with('ruta')->orderBy('fecha_salida', 'desc')->get();
+        $viajes = Viaje::with('ruta')
+            ->whereDate('fecha_salida', '>=', now()->toDateString())
+            ->orderBy('fecha_salida', 'desc')
+            ->get();
         return view('cargas.create', compact('viajes'));
     }
 
@@ -53,6 +56,11 @@ class CargaController extends Controller
             'detalles.*.peso'        => 'required|numeric|min:0.01',
             'detalles.*.costo'       => 'required|numeric|min:0',
         ]);
+
+        $viaje = Viaje::findOrFail($validated['viaje_id']);
+        if (\Carbon\Carbon::parse($viaje->fecha_salida)->lt(now()->startOfDay())) {
+            return back()->withInput()->withErrors(['viaje_id' => 'No se puede registrar carga para un viaje en el pasado.']);
+        }
 
         $turno = Turno::firstOrCreate(
             ['cajero_id' => Auth::user()->ci_usuario, 'fecha_fin' => null],
@@ -88,7 +96,10 @@ class CargaController extends Controller
     public function edit(Carga $carga)
     {
         $carga->load('detalles');
-        $viajes = Viaje::with('ruta')->orderBy('fecha_salida', 'desc')->get();
+        $viajes = Viaje::with('ruta')
+            ->whereDate('fecha_salida', '>=', now()->toDateString())
+            ->orderBy('fecha_salida', 'desc')
+            ->get();
         return view('cargas.edit', compact('carga', 'viajes'));
     }
 

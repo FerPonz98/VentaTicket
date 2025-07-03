@@ -22,7 +22,7 @@
         <option value="{{ $v->id }}"
           {{ ($viajeSeleccionado == $v->id) ? 'selected' : '' }}>
           {{ $v->ruta->origen }} → {{ $v->ruta->destino }}
-          ({{ $v->fecha_salida->format('d-m-Y H:i') }})
+          ({{ \Carbon\Carbon::parse($v->fecha_salida)->format('d-m-Y H:i') }})
         </option>
       @endforeach
     </select>
@@ -38,21 +38,33 @@
       $capacidad   = $p1 + $p2;
       $disponible  = max(0, $capacidad - $ocupados_ct);
 
-      function genLayout($count) {
-        $rows = []; $full = intdiv($count,4); $rem = $count%4; $n=1;
+      $genLayout = function($count, $start = 1) {
+        $rows = []; $full = intdiv($count,4); $rem = $count%4; $n=$start;
         for($i=0;$i<$full;$i++){
-          $rows[] = [$n++,$n++,'aisle',$n++,$n++];
+            $rows[] = [$n++,$n++,'aisle',$n++,$n++];
         }
         if($rem){
-          $row=[];
-          for($i=0;$i<$rem;$i++) $row[]=(string)$n++;
-          for($i=$rem;$i<5;$i++) $row[]='empty';
-          $rows[]=$row;
+            $row=[];
+            for($i=0;$i<$rem;$i++) $row[]=(string)$n++;
+            for($i=$rem;$i<5;$i++) $row[]='empty';
+            $rows[]=$row;
         }
         return $rows;
+      };
+      $layout1 = $genLayout($p1, 1);
+
+      // Calcular el último número de asiento del piso 1
+      $lastNumPiso1 = $p1;
+      if (count($layout1)) {
+          $last = end($layout1);
+          foreach ($last as $cell) {
+              if (is_numeric($cell)) {
+                  $lastNumPiso1 = (int)$cell;
+              }
+          }
       }
-      $layout1 = genLayout($p1);
-      $layout2 = $bus->tipo_de_bus==='Doble piso' ? genLayout($p2) : [];
+
+      $layout2 = $bus->tipo_de_bus==='Doble piso' ? $genLayout($p2, $lastNumPiso1 + 1) : [];
     @endphp
 
     {{-- Si no queda ningún asiento, mostramos aviso --}}
@@ -100,7 +112,7 @@
       {{-- Hora de salida --}}
       <div class="mb-4">
         <label class="block text-sm font-medium text-gray-700">Hora de Salida</label>
-        <input type="text" value="{{ $viaje->fecha_salida->format('H:i') }}"
+        <input type="text" value="{{ \Carbon\Carbon::parse($viaje->fecha_salida)->format('H:i') }}"
                class="w-32 border-gray-300 rounded px-3 py-2"
                readonly>
       </div>
@@ -163,7 +175,45 @@
                placeholder="Ej. Juan Pérez">
         @error('nombre_completo')<p class="text-red-600 text-sm">{{ $message }}</p>@enderror
       </div>
+      {{-- CI del pasajero --}}
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1" for="ci_usuario">
+          CI del pasajero
+        </label>
+        <input
+          type="text"
+          name="ci_usuario"
+          id="ci_usuario"
+          value="{{ old('ci_usuario') }}"
+          required
+          class="w-full border-gray-300 rounded px-3 py-2"
+          placeholder="Ej. 12345678"
+        >
+        @error('ci_usuario')
+          <p class="text-red-600 text-sm">{{ $message }}</p>
+        @enderror
+      </div>
 
+      {{-- Edad del pasajero --}}
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1" for="edad">
+          Edad
+        </label>
+        <input
+          type="number"
+          name="edad"
+          id="edad"
+          min="0"
+          max="150"
+          value="{{ old('edad') }}"
+          required
+          class="w-full border-gray-300 rounded px-3 py-2"
+          placeholder="Ej. 34"
+        >
+        @error('edad')
+          <p class="text-red-600 text-sm">{{ $message }}</p>
+        @enderror
+      </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de pasajero</label>
         <select name="tipo_pasajero" required class="w-full border-gray-300 rounded px-3 py-2">
@@ -180,7 +230,7 @@
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de viaje</label>
         <input type="text" name="fecha" readonly
-               value="{{ $viaje->fecha_salida->format('Y-m-d') }}"
+               value="{{ \Carbon\Carbon::parse($viaje->fecha_salida)->format('Y-m-d') }}"
                class="w-full border-gray-300 rounded px-3 py-2 ">
       </div>
 
@@ -196,6 +246,8 @@
         </select>
         @error('forma_pago')<p class="text-red-600 text-sm">{{ $message }}</p>@enderror
       </div>
+
+     
 
       {{-- Botón: deshabilitado si no quedan asientos --}}
       <div>
@@ -226,6 +278,61 @@
         document.getElementById('asientoSeleccionado').value = el.dataset.seat;
       });
     });
+
+    const edadInput = document.getElementById('edad');
+    const tipoSelect = document.querySelector('select[name="tipo_pasajero"]');
+    const descuentoDiv = document.createElement('div');
+    descuentoDiv.innerHTML = `
+      <label class="block text-sm font-medium text-gray-700 mb-1" for="codigo_descuento">
+        Código de descuento
+      </label>
+      <input type="text" name="codigo_descuento" id="codigo_descuento"
+             class="w-full border-gray-300 rounded px-3 py-2"
+             placeholder="Ingrese código de descuento">
+    `;
+
+    function actualizarOpcionesTipo() {
+      const edad = parseInt(edadInput.value, 10);
+      Array.from(tipoSelect.options).forEach(opt => {
+      
+        if(opt.value === "cortesia" || opt.value === "desc" || opt.value === "") {
+          opt.disabled = false;
+          return;
+        }
+        if(opt.value === "menor") {
+          opt.disabled = !(edad < 18);
+          if(opt.disabled && tipoSelect.value === "menor") tipoSelect.value = "";
+        }
+
+        if(opt.value === "adulto") {
+          opt.disabled = !(edad >= 18 && edad <= 60);
+          if(opt.disabled && tipoSelect.value === "adulto") tipoSelect.value = "";
+        }
+   
+        if(opt.value === "tercera_edad") {
+          opt.disabled = !(edad > 60);
+          if(opt.disabled && tipoSelect.value === "tercera_edad") tipoSelect.value = "";
+        }
+      });
+      mostrarCampoDescuento();
+    }
+
+    function mostrarCampoDescuento() {
+  
+      if(tipoSelect.value === "desc") {
+        if(!document.getElementById('codigo_descuento')) {
+          tipoSelect.parentNode.appendChild(descuentoDiv);
+        }
+      } else {
+        if(document.getElementById('codigo_descuento')) {
+          descuentoDiv.remove();
+        }
+      }
+    }
+
+    edadInput.addEventListener('input', actualizarOpcionesTipo);
+    tipoSelect.addEventListener('change', mostrarCampoDescuento);
+    actualizarOpcionesTipo(); 
   });
 </script>
 @endsection

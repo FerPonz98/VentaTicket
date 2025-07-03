@@ -69,7 +69,7 @@
             <tr class="border-b border-gray-200 hover:bg-gray-50">
               <td class="px-6 py-4">{{ $viaje->bus->codigo }}</td>
               <td class="px-6 py-4">{{ $viaje->ruta->origen }} → {{ $viaje->ruta->destino }}</td>
-              <td class="px-6 py-4">{{ $viaje->fecha_salida->format('Y-m-d H:i') }}</td>
+              <td class="px-6 py-4">{{ \Carbon\Carbon::parse($viaje->fecha_salida)->format('Y-m-d H:i') }}</td>
               <td class="px-6 py-4">{{ number_format($viaje->precio, 2) }}</td>
               <td class="px-6 py-4">{{ $vendidos }}</td>
               <td class="px-6 py-4">{{ $disponibles }}</td>
@@ -113,7 +113,7 @@
             <td class="px-4 py-2">
               {{ $pasaje->viaje->ruta->origen ?? '-' }} → {{ $pasaje->viaje->ruta->destino ?? '-' }}
             </td>
-            <td class="px-4 py-2">{{ $pasaje->created_at->format('Y-m-d H:i') }}</td>
+            <td class="px-4 py-2">{{ \Carbon\Carbon::parse($pasaje->created_at)->format('Y-m-d H:i') }}</td>
             <td class="px-4 py-2">{{ number_format($pasaje->precio, 2) }}</td>
             <td class="px-4 py-2">
               <a href="{{ route('pasajes.ticket', $pasaje) }}"

@@ -32,15 +32,11 @@
       <div><span class="font-medium text-gray-700">Recargo Semicama:</span> <span class="text-gray-900">Bs {{ number_format($ruta->recargo_semicama ?? 0,2) }}</span></div>
       <div><span class="font-medium text-gray-700">Descuento 3ra Edad:</span> <span class="text-gray-900">Bs {{ number_format($ruta->descuento_3ra_edad,2) }}</span></div>
       <div><span class="font-medium text-gray-700">Precio Cortesía:</span> <span class="text-gray-900">Bs {{ number_format($ruta->precio_cortesia,2) }}</span></div>
-      <div><span class="font-medium text-gray-700">Descuento Discapacidad:</span> <span class="text-gray-900">Bs {{ number_format($ruta->descuento_discapacidad,2) }}</span></div>
-      <div><span class="font-medium text-gray-700">Descuento 2:</span> <span class="text-gray-900">Bs {{ number_format($ruta->descuento_2 ?? 0,2) }}</span></div>
-      <div><span class="font-medium text-gray-700">Descuento 3:</span> <span class="text-gray-900">Bs {{ number_format($ruta->descuento_3 ?? 0,2) }}</span></div>
-      <div><span class="font-medium text-gray-700">Precio Encomienda a Destino:</span> <span class="text-gray-900">Bs {{ number_format($ruta->precio_encomienda,2) }}</span></div>
-      <div><span class="font-medium text-gray-700">Precio Carga:</span> <span class="text-gray-900">Bs {{ number_format($ruta->precio_carga,2) }}</span></div>
-    </div>
+      <div><span class="font-medium text-gray-700">Descuento Discapacidad:</span> <span class="text-gray-900">Bs {{ number_format($ruta->descuento_discapacidad,2) }}</span></div> <br>
+
 
     {{-- Paradas y Tarifas por Tramo --}}
-    <h3 class="text-lg font-medium text-black mb-2">Paradas y Tarifas por Tramo</h3>
+    <h3 class="text-lg font-medium text-black mb-2">Paradas y Tarifas por Tramo</h3><br>
     @php $paradas = $ruta->paradas ?? []; @endphp
     @if(count($paradas))
       <div class="overflow-x-auto">
@@ -51,8 +47,6 @@
               <th class="p-2 border text-gray-700">Parada</th>
 
               <th class="p-2 border text-gray-700">Pasaje (Bs.)</th>
-              <th class="p-2 border text-gray-700">Encomienda (Bs.)</th>
-              <th class="p-2 border text-gray-700">Carga (Bs.)</th>
             </tr>
           </thead>
           <tbody class="bg-white">
@@ -61,8 +55,6 @@
                 <td class="p-2 border text-center text-gray-900">{{ $p['numero'] }}</td>
                 <td class="p-2 border text-gray-900">{{ $p['nombre'] }}</td>
                 <td class="p-2 border text-gray-900">{{ number_format($p['precio_pasaje'] ?? 0,2) }}</td>
-                <td class="p-2 border text-gray-900">{{ number_format($p['precio_encomienda_parada'] ?? 0,2) }}</td>
-                <td class="p-2 border text-gray-900">{{ number_format($p['precio_carga_parada'] ?? 0,2) }}</td>
               </tr>
             @endforeach
           </tbody>

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ruta;
-use App\Models\Viaje; // Asegúrate de importar el modelo Viaje
 use Illuminate\Http\Request;
 
 class RutaController extends Controller
@@ -33,8 +32,7 @@ class RutaController extends Controller
             $ruta->addParada(
                 $p['nombre'],                   
                 (float)$p['precio_pasaje'],     
-                (float)$p['precio_encomienda_parada'], 
-                (float)$p['precio_carga_parada'],      
+    
                 $p['hora'] ?? null              
             );
         }
@@ -69,8 +67,7 @@ class RutaController extends Controller
             $ruta->addParada(
                 $p['nombre'],                   
                 (float)$p['precio_pasaje'],     
-                (float)$p['precio_encomienda_parada'], 
-                (float)$p['precio_carga_parada'],      
+  
                 $p['hora'] ?? null          
             );
         }
@@ -111,25 +108,14 @@ class RutaController extends Controller
             'descuento_discapacidad'         => 'required|numeric|min:0',
             'descuento_2'                    => 'nullable|numeric|min:0',
             'descuento_3'                    => 'nullable|numeric|min:0',
-            'precio_encomienda'              => 'required|numeric|min:0',
-            'precio_carga'                   => 'required|numeric|min:0',
+            'precio_encomienda'              => 'nullable|numeric|min:0',
+            'precio_carga'                   => 'nullable|numeric|min:0',
             'paradas'                        => 'nullable|array',
             'paradas.*.nombre'               => 'required_with:paradas|string|max:100',
             'paradas.*.precio_pasaje'        => 'required_with:paradas|numeric|min:0',
-            'paradas.*.precio_encomienda_parada' => 'required_with:paradas|numeric|min:0',
-            'paradas.*.precio_carga_parada'  => 'required_with:paradas|numeric|min:0',
+            'paradas.*.precio_encomienda_parada' => 'nullable_with:paradas|numeric|min:0',
+            'paradas.*.precio_carga_parada'  => 'nullable_with:paradas|numeric|min:0',
             'paradas.*.hora'                 => 'nullable|date_format:H:i',
         ]);
-    }
-
-    public function filterViajes(Request $request)
-    {
-        $rutas = Ruta::all(); 
-        $viajesHoy = Viaje::with(['bus', 'ruta', 'pasajes'])
-            ->when($request->input('fecha'), fn($q) => $q->whereDate('fecha_salida', $request->input('fecha')))
-            ->when($request->input('ruta'), fn($q) => $q->where('ruta_id', $request->input('ruta')))
-            ->get();
-
-        return view('pasajes.index', compact('viajesHoy', 'fecha', 'rutas'));
     }
 }

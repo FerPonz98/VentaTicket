@@ -71,10 +71,10 @@
             @foreach($viajes as $v)
               <option value="{{ $v->id }}"
                 data-origen="{{ $v->ruta->origen }}"
-                data-salida="{{ $v->fecha_salida->format('H:i') }}"
+                data-salida="{{ \Carbon\Carbon::parse($v->fecha_salida)->format('H:i') }}"
                 {{ old('viaje_id', $encomienda->viaje_id)==$v->id?'selected':'' }}>
                 {{ $v->ruta->origen }} → {{ $v->ruta->destino }}
-                ({{ $v->bus->codigo }}) {{ $v->fecha_salida->format('Y-m-d H:i') }}
+                ({{ $v->bus->codigo }}) {{ \Carbon\Carbon::parse($v->fecha_salida)->format('Y-m-d H:i') }}
               </option>
             @endforeach
           </select>

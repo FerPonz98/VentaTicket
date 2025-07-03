@@ -49,12 +49,12 @@
             <td class="px-6 py-4 space-x-4">
               <a href="{{ route('choferes.show', $chofer) }}" class="text-indigo-600 hover:underline">Ver</a>
               <a href="{{ route('choferes.edit', $chofer) }}" class="text-yellow-600 hover:underline">Editar</a>
-              @if($chofer->CI != Auth::user()->ci_usuario)
+       
                 <form action="{{ route('choferes.destroy', $chofer) }}" method="POST" class="inline">
                   @csrf @method('DELETE')
                   <button type="submit" onclick="return confirm('¿Eliminar este chofer?')" class="text-red-600 hover:underline">Eliminar</button>
                 </form>
-              @endif
+             
             </td>
           </tr>
         @empty

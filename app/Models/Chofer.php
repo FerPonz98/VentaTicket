@@ -40,6 +40,10 @@ class Chofer extends Model
     }
     public function kardexes()
     {
-        return $this->hasMany(Kardex::class, 'chofer_ci', 'CI');
+        return $this->hasMany(Kardex::class, 'chofer_id', 'CI');
+    }
+    public function chofer()
+    {
+        return $this->belongsTo(Chofer::class, 'chofer_id', 'CI');
     }
 }

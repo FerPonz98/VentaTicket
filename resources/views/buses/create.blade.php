@@ -216,7 +216,7 @@
         >
           <option value="">-- Seleccione Chofer --</option>
           @foreach($choferes as $chofer)
-            <option value="{{ $chofer->id }}" {{ old('chofer_id') == $chofer->id ? 'selected' : '' }}>
+            <option value="{{ $chofer->CI }}" {{ old('chofer_id') == $chofer->CI ? 'selected' : '' }}>
               {{ $chofer->nombre_chofer }}
             </option>
           @endforeach
@@ -232,9 +232,11 @@
         >
           <option value="">-- Seleccione Chofer --</option>
           @foreach($choferes as $chofer)
-            <option value="{{ $chofer->id }}" {{ old('chofer_id') == $chofer->id ? 'selected' : '' }}>
-              {{ $chofer->nombre_chofer }}
-            </option>
+            @if(old('chofer_id') != $chofer->CI)
+              <option value="{{ $chofer->CI }}" {{ old('chofer2_id') == $chofer->CI ? 'selected' : '' }}>
+                {{ $chofer->nombre_chofer }}
+              </option>
+            @endif
           @endforeach
         </select>
       </div>
@@ -274,12 +276,9 @@
 
     function syncSecondary() {
       const selected = primary.value;
-  
       Array.from(secondary.options).forEach(opt => {
-    
-        opt.disabled = (opt.value === selected);
+        opt.disabled = (opt.value === selected && opt.value !== "");
       });
-
       if (secondary.value === selected) {
         secondary.value = '';
       }
@@ -370,25 +369,22 @@
 
 <script>
  
-  function genLayout(cnt) {
+  function genLayout(cnt, start = 1) {
   const rows = [];
-  let n = 1;
+  let n = start;
 
   const fullRows = Math.floor(cnt / 4);
   const rem = cnt % 4;
 
   if (cnt > 0 && cnt % 5 === 0) {
- 
     const filasNormales = Math.floor((cnt - 5) / 4);
     for (let i = 0; i < filasNormales; i++) {
       rows.push([String(n++), String(n++), 'aisle', String(n++), String(n++)]);
     }
-  
     const filaFinal = [];
     for (let i = 0; i < 5; i++) filaFinal.push(String(n++));
     rows.push(filaFinal);
   } else {
-
     for (let i = 0; i < fullRows; i++) {
       rows.push([String(n++), String(n++), 'aisle', String(n++), String(n++)]);
     }
@@ -503,8 +499,20 @@
             l2   = JSON.parse(layout2.value) || [];
 
       render(1, l1.length ? l1 : genLayout(cnt1), 'grid1');
+
+      // Calcular el último número de asiento del piso 1
+      let lastNumPiso1 = 0;
+      const layoutPiso1 = l1.length ? l1 : genLayout(cnt1);
+      layoutPiso1.forEach(row => {
+        row.forEach(cell => {
+          if (/^\d+$/.test(cell)) {
+            lastNumPiso1 = Math.max(lastNumPiso1, parseInt(cell));
+          }
+        });
+      });
+
       if (tipo.value === 'Doble piso') {
-        render(2, l2.length ? l2 : genLayout(cnt2), 'grid2');
+        render(2, l2.length ? l2 : genLayout(cnt2, lastNumPiso1 + 1), 'grid2');
       }
     }
 

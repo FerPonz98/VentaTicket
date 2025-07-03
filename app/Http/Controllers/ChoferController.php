@@ -113,6 +113,9 @@ class ChoferController extends Controller
             abort(403);
         }
 
+        // Desasociar el chofer de los buses antes de eliminarlo
+        \App\Models\Bus::where('chofer_id', $chofer->CI)->update(['chofer_id' => null]);
+
         $chofer->delete();
 
         return redirect()

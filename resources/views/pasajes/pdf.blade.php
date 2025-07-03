@@ -1,6 +1,11 @@
 {{-- resources/views/pasajes/pdf.blade.php --}}
 <!DOCTYPE html>
 <html><head><meta charset="utf-8">
+@php
+  $asiento = (int) $pasaje->asiento;
+  $piso1 = (int) $pasaje->viaje->bus->asientos_piso1;
+  $piso = $asiento <= $piso1 ? 1 : 2;
+@endphp
   <style>
     @page { size: 80mm auto; margin: 0; }
     body {
@@ -84,7 +89,7 @@
   </tr>
   <tr>
     <td><strong>Asiento:</strong></td>
-    <td>{{ $pasaje->asiento }}</td>
+    <td>{{ $pasaje->asiento }} (Piso {{ $piso }})</td>
   </tr>
   <tr>
     <td><strong>Pasajero:</strong></td>
@@ -145,3 +150,5 @@ y otros que despidan malos olores, o escuchar artefactos con alto volumen.<br>
 
 </body>
 </html>
+
+

@@ -83,8 +83,10 @@ class ViajeController extends Controller
             'ruta_id'      => 'required|exists:rutas,id',
             'fecha_salida' => 'required|date',
             'precio'       => 'required|numeric|min:0',
+            'tipo_descuento' => 'nullable|in:desc2,desc3',
         ]);
-
+        $campo = $data['tipo_descuento']==='desc2' ? 'descuento_2' : 'descuento_3';
+        $data['valor_descuento'] = $viaje->ruta->$campo;
         $viaje->update($data);
 
         return redirect()->route('viajes.index')

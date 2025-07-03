@@ -53,8 +53,7 @@
           ['label'=>'Descuento 3ra Edad','name'=>'descuento_3ra_edad'],
           ['label'=>'Precio Cortesía','name'=>'precio_cortesia'],
           ['label'=>'Descuento Discapacidad','name'=>'descuento_discapacidad'],
-          ['label'=>'Descuento 2','name'=>'descuento_2'],
-          ['label'=>'Descuento 3','name'=>'descuento_3'],
+
         ] as $field)
           <div>
             <label class="block mb-1 text-gray-700 font-medium">{{ $field['label'] }}*</label>
@@ -66,23 +65,7 @@
         @endforeach
       </div>
 
-      {{-- Precios Encomienda/Carga Ruta --}}
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block mb-1 text-gray-700 font-medium">Precio Encomienda (Bs.)*</label>
-          <input name="precio_encomienda" type="number" step="0.01" min="0"
-                 value="{{ old('precio_encomienda', $ruta->precio_encomienda) }}" required
-                 class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 text-gray-900 focus:ring-2 focus:ring-indigo-500">
-          @error('precio_encomienda')<p class="mt-1 text-red-600 text-sm">{{ $message }}</p>@enderror
-        </div>
-        <div>
-          <label class="block mb-1 text-gray-700 font-medium">Precio Carga (Bs.)*</label>
-          <input name="precio_carga" type="number" step="0.01" min="0"
-                 value="{{ old('precio_carga', $ruta->precio_carga) }}" required
-                 class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 text-gray-900 focus:ring-2 focus:ring-indigo-500">
-          @error('precio_carga')<p class="mt-1 text-red-600 text-sm">{{ $message }}</p>@enderror
-        </div>
-      </div>
+
 
       {{-- Paradas Dinámicas --}}
       <div>
@@ -94,8 +77,6 @@
                 <th class="p-2 border text-gray-900">#</th>
                 <th class="p-2 border text-gray-700">Parada</th>
                 <th class="p-2 border text-gray-700">Pasaje (Bs.)</th>
-                <th class="p-2 border text-gray-700">Encomienda (Bs.)</th>
-                <th class="p-2 border text-gray-700">Carga (Bs.)</th>
                 <th class="p-2 border text-center text-gray-600">Acción</th>
               </tr>
             </thead>
@@ -112,16 +93,6 @@
                   <td class="p-2">
                     <input name="paradas[{{ $i }}][precio_pasaje]" type="number" step="0.01" min="0" required
                            value="{{ $p['precio_pasaje'] ?? $p['precio'] ?? '' }}"
-                           class="w-full bg-gray-50 border border-gray-300 rounded px-2 py-1 text-gray-900">
-                  </td>
-                  <td class="p-2">
-                    <input name="paradas[{{ $i }}][precio_encomienda_parada]" type="number" step="0.01" min="0" required
-                           value="{{ $p['precio_encomienda_parada'] ?? '' }}"
-                           class="w-full bg-gray-50 border border-gray-300 rounded px-2 py-1 text-gray-900">
-                  </td>
-                  <td class="p-2">
-                    <input name="paradas[{{ $i }}][precio_carga_parada]" type="number" step="0.01" min="0" required
-                           value="{{ $p['precio_carga_parada'] ?? '' }}"
                            class="w-full bg-gray-50 border border-gray-300 rounded px-2 py-1 text-gray-900">
                   </td>
                   <td class="p-2 text-center">

@@ -62,8 +62,9 @@ class Bus extends Model
         return $this->hasMany(Viaje::class);
     }
 
+
     public function chofer()
     {
-        return $this->belongsTo(Chofer::class);
+        return $this->belongsTo(\App\Models\Chofer::class, 'chofer_id', 'CI');
     }
 }

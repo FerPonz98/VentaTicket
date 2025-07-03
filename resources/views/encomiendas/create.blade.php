@@ -87,12 +87,14 @@
             class="mt-1 block w-full border-gray-300 rounded-md bg-gray-100 text-black">
             <option value="">-- Selecciona viaje --</option>
             @foreach($viajes as $v)
-              <option value="{{ $v->id }}"
-                data-origen="{{ $v->ruta->origen }}"
-                data-salida="{{ $v->fecha_salida->format('H:i') }}">
-                {{ $v->ruta->origen }} → {{ $v->ruta->destino }}
-                ({{ $v->bus->codigo }}) {{ $v->fecha_salida->format('Y-m-d H:i') }}
-              </option>
+              @if(\Carbon\Carbon::parse($v->fecha_salida)->toDateString() >= now()->toDateString())
+                <option value="{{ $v->id }}"
+                  data-origen="{{ $v->ruta->origen }}"
+                  data-salida="{{ \Carbon\Carbon::parse($v->fecha_salida)->format('H:i') }}">
+                  {{ $v->ruta->origen }} → {{ $v->ruta->destino }}
+                  ({{ $v->bus->codigo }}) {{ \Carbon\Carbon::parse($v->fecha_salida)->format('Y-m-d H:i') }}
+                </option>
+              @endif
             @endforeach
           </select>
         </div>

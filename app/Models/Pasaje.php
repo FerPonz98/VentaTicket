@@ -18,6 +18,8 @@ class Pasaje extends Model
         'origen',
         'destino',
         'nombre_completo',
+        'ci_usuario', 
+        'edad',
         'tipo_pasajero',
         'precio',
         'asiento',
@@ -28,6 +30,9 @@ class Pasaje extends Model
         'tercera_edad',
         'menor_edad',
         'fecha',
+        'tipo_descuento',   
+        'valor_descuento',  
+        'codigo_descuento', 
     ];
 
     protected $casts = [
