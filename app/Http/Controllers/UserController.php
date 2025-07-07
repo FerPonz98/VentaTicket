@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -28,7 +29,8 @@ class UserController extends Controller
 
     public function create()
     {
-        return view('admin.users.create');
+        $sucursales = \App\Models\Sucursal::all();
+        return view('admin.users.create', compact('sucursales'));
     }
 
     public function store(Request $request)
@@ -75,6 +77,11 @@ class UserController extends Controller
                 : null;
         }
 
+        $data = $request->all();
+        if (Auth::user()->rol !== 'admin' && isset($data['rol']) && $data['rol'] === 'admin') {
+            $data['rol'] = 'cajero'; 
+        }
+
         User::create([
             'ci_usuario'        => $request->ci_usuario,
             'nombre_usuario'    => $request->nombre_usuario,
@@ -111,7 +118,8 @@ return redirect()->route('users.index')
     public function edit($ci_usuario)
     {
         $usuario = User::findOrFail($ci_usuario);
-        return view('admin.users.edit', compact('usuario'));
+        $sucursales = \App\Models\Sucursal::all();
+        return view('admin.users.edit', compact('usuario', 'sucursales'));
     }
 
     public function update(Request $request, $ci_usuario)
@@ -173,6 +181,11 @@ return redirect()->route('users.index')
             }
         }
 
+        $rol = $request->rol;
+        if (Auth::user()->rol !== 'admin' && $rol === 'admin') {
+            $rol = 'cajero';
+        }
+
         $usuario->update([
            //'ci_usuario'        => $request->ci_usuario,
             'nombre_usuario'    => $request->nombre_usuario,
@@ -185,7 +198,7 @@ return redirect()->route('users.index')
             'email'             => $request->email,
             'celular'           => $request->celular,
             'referencias'       => $request->referencias,
-            'rol'               => $request->rol,
+            'rol'               => $rol,
             'sucursal'          => $request->sucursal,
             'password'          => $request->filled('password')
                                      ? bcrypt($request->password)

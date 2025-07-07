@@ -17,6 +17,10 @@ use App\Http\Controllers\RutaController;
 use App\Http\Controllers\ViajeController;
 use App\Http\Controllers\PasajeController;
 use App\Http\Controllers\TurnoController;
+use App\Http\Controllers\DescuentoController;
+use App\Http\Controllers\SucursalController;
+
+
 
 Route::redirect('/', '/login');
 
@@ -38,11 +42,15 @@ Route::middleware(['auth', 'rol:chofer,ayudante'])->group(function(){
  });
 
 
-Route::middleware(['auth', 'rol:admin'])
-    ->get('/dashboard', fn() => view('admin.dashboard'))
-    ->name('dashboard');
-
-Route::middleware(['auth', 'rol:admin'])->group(function() {
+ Route::middleware(['auth', 'rol:admin'])->group(function () {
+     Route::get('/dashboard', [SucursalController::class, 'dashboard'])->name('dashboard');
+     Route::get('/sucursales/create', [SucursalController::class, 'create'])->name('sucursales.create');
+     Route::post('/sucursales', [SucursalController::class, 'store'])->name('sucursales.store');
+     Route::get('/descuentos/create', [DescuentoController::class, 'create'])->name('descuentos.create');
+     Route::post('/descuentos', [DescuentoController::class, 'store'])->name('descuentos.store');
+ });
+ 
+Route::middleware(['auth', 'rol:admin,supervisor gral'])->group(function() {
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
     Route::resource('users', UserController::class)->parameters(['users' => 'ci_usuario']);
     Route::resource('buses', BusController::class)->parameters(['buses' => 'bus']);
@@ -127,11 +135,13 @@ Route::middleware(['auth', 'rol:admin,supervisor gral,supervisor suc,cajero,vent
         Route::get('carga/{carga}/pdf', [CargaController::class, 'pdf'])->name('carga.pdf');
     });
 
-Route::middleware(['auth', 'rol:admin,supervisor gral,supervisor suc,cajero,ventas qr,carga,encomienda'])
+    Route::middleware(['auth', 'rol:admin,supervisor gral,supervisor suc,cajero,ventas qr,carga,encomienda'])
     ->group(function() {
         Route::get('turnos', [TurnoController::class, 'index'])->name('turnos.index');
         Route::post('turnos/{turno}/close', [TurnoController::class, 'close'])->name('turnos.close');
+        Route::get('turnos/{turno}', [TurnoController::class, 'show'])->name('turnos.show');
     });
+
 
 Route::middleware(['auth', 'rol:admin,supervisor gral,supervisor suc,cajero,ventas qr,carga,encomienda'])
     ->prefix('encomiendas')
@@ -145,4 +155,24 @@ Route::middleware(['auth', 'rol:admin,supervisor gral,supervisor suc,cajero,vent
         Route::put('{encomienda}', [EncomiendaController::class, 'update'])->name('update');
         Route::delete('{encomienda}', [EncomiendaController::class, 'destroy'])->name('destroy');
         Route::get('{encomienda}/pdf', [EncomiendaController::class, 'pdf'])->name('pdf');
+    });
+
+    Route::middleware(['auth', 'rol:admin,supervisor gral,supervisor suc,cajero,ventas qr,carga,encomienda'])
+    ->group(function() {
+    Route::get('/turnos',           [TurnoController::class,'index'])
+         ->name('turnos.index');
+
+    Route::post('/turnos/open',     [TurnoController::class,'open'])
+         ->name('turnos.open');
+
+    Route::post('/turnos/{turno}/close', [TurnoController::class,'close'])
+         ->name('turnos.close');
+
+    Route::get('/turnos/{turno}',   [TurnoController::class,'show'])
+         ->name('turnos.show');
+ 
+         Route::get('/turnos/{turno}/ingresos', [TurnoController::class, 'ingresos'])->name('turnos.ingresos');
+         Route::post('/turnos/{turno}/ingresos', [TurnoController::class, 'ingresosStore'])->name('turnos.ingresos.store');
+         Route::get('/turnos/{turno}/egresos', [TurnoController::class, 'egresos'])->name('turnos.egresos');
+         Route::post('/turnos/{turno}/egresos', [TurnoController::class, 'egresosStore'])->name('turnos.egresos.store');
     });

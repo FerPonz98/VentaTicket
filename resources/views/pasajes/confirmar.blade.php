@@ -46,7 +46,10 @@
             // Busca el precio de la parada seleccionada
             if (!empty($datos['destino']) && is_array($paradas)) {
                 foreach ($paradas as $parada) {
-                    if (isset($parada['nombre']) && $parada['nombre'] === $datos['destino']) {
+                    if (
+                        isset($parada['nombre'], $parada['precio_pasaje']) &&
+                        $parada['nombre'] === $datos['destino']
+                    ) {
                         $precioBase = $parada['precio_pasaje'];
                         break;
                     }

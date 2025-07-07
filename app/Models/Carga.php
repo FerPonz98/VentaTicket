@@ -17,6 +17,7 @@ class Carga extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'viaje_id',
         'cajero_id',
         'nro_guia',
         'estado',
@@ -69,6 +70,7 @@ class DetalleCarga extends Model
         'carga_id',
         'cantidad',
         'descripcion',
+        'costo',
         'peso',
     ];
     public function viaje()

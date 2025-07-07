@@ -40,8 +40,9 @@ class ViajeController extends Controller
             return "{$origen} → {$destino}";
         });
         $precios = Ruta::pluck('precio_bus_normal', 'id');
+        $sucursales = \App\Models\Sucursal::pluck('nombre', 'id'); // <-- Agrega esta línea
 
-        return view('viajes.create', compact('buses','rutas','precios'));
+        return view('viajes.create', compact('buses', 'rutas', 'precios', 'sucursales'));
     }
 
     public function store(Request $request)
@@ -51,6 +52,7 @@ class ViajeController extends Controller
             'ruta_id'      => 'required|exists:rutas,id',
             'fecha_salida' => 'required|date',
             'precio'       => 'required|numeric|min:0',
+            'sucursal_id'  => 'required|exists:sucursales,id', 
         ]);
 
         Viaje::create($data);
@@ -72,8 +74,9 @@ class ViajeController extends Controller
             return "{$origen} → {$destino}";
         });
         $precios = Ruta::pluck('precio_bus_normal', 'id');
+        $sucursales = \App\Models\Sucursal::pluck('nombre', 'id'); 
 
-        return view('viajes.edit', compact('viaje', 'buses', 'rutas', 'precios'));
+        return view('viajes.edit', compact('buses', 'rutas', 'precios', 'sucursales', 'viaje'));
     }
 
     public function update(Request $request, Viaje $viaje)
@@ -83,10 +86,9 @@ class ViajeController extends Controller
             'ruta_id'      => 'required|exists:rutas,id',
             'fecha_salida' => 'required|date',
             'precio'       => 'required|numeric|min:0',
-            'tipo_descuento' => 'nullable|in:desc2,desc3',
+            'sucursal_id'  => 'required|exists:sucursales,id', // <-- Agrega esto
         ]);
-        $campo = $data['tipo_descuento']==='desc2' ? 'descuento_2' : 'descuento_3';
-        $data['valor_descuento'] = $viaje->ruta->$campo;
+
         $viaje->update($data);
 
         return redirect()->route('viajes.index')
@@ -100,4 +102,6 @@ class ViajeController extends Controller
         return redirect()->route('viajes.index')
                          ->with('success','Viaje eliminado correctamente.');
     }
+    
+
 }

@@ -17,7 +17,8 @@ class Viaje extends Model
         'fecha_salida',
         'precio',
         'cerrado',
-        'chofer_id',          // <--- asegúrate de tener esta columna en la tabla
+        'chofer_id',       
+        'sucursal_id',  
     ];
 
     public function bus()

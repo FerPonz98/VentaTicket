@@ -12,6 +12,7 @@
                 CI del usuario
             </label>
             <input id="ci_usuario" name="ci_usuario" type="text" required autofocus
+                autocomplete="off"
                 class="mt-1 block w-full rounded-md bg-gray-100 border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 px-2">
 
             @error('ci_usuario')

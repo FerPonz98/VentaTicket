@@ -3,12 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Encomienda;
+use App\Models\Turno;
 use App\Models\EncomiendaItem;
 use App\Models\Viaje;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Barryvdh\DomPDF\Facade\Pdf;
+
 
 class EncomiendaController extends Controller
 {
@@ -32,52 +33,85 @@ class EncomiendaController extends Controller
 
         return view('encomiendas.create', compact('viajes'));
     }
-
     public function store(Request $request)
-    {
-        $data = $request->validate([
-            'viaje_id'               => 'required|exists:viajes,id',
-            'fecha'                  => 'required|date',
-            'horario'                => 'required|date_format:H:i',
-            'hora_recepcion'         => 'required|date_format:H:i',
-            'estado'                 => 'required|in:por_pagar,pagado',
-            'cajero_id'              => 'required|exists:usuarios,ci_usuario',
+{
+    $userRole = Auth::user()->rol; 
+    
+    if (!in_array($userRole, ['admin', 'supervisor_general', 'supervisor_sucursal'])) {
+        $turnoAbierto = Turno::de(Auth::user()->ci_usuario, Auth::user()->sucursal, Auth::user()->rol)
+                             ->abierto()
+                             ->first();
 
-            'remitente_id'           => 'required|string|max:50',
-            'remitente_nombre'       => 'required|string|max:255',
-            'remitente_telefono'     => 'required|string|max:20',
-
-            'consignatario_nombre'   => 'required|string|max:255',
-            'consignatario_ci'       => 'required|string|max:50',
-            'consignatario_telefono' => 'required|string|max:20',
-
-            'items'                  => 'required|array|min:1',
-            'items.*.cantidad'       => 'required|integer|min:1',
-            'items.*.descripcion'    => 'required|string',
-            'items.*.peso'           => 'required|numeric|min:0.01',
-            'items.*.costo'          => 'required|numeric|min:0',
-        ]);
-
-        $data['guia_numero']   = 'E'.now()->format('YmdHis');
-        $data['es_carga']      = false;
-        $data['cajero_id']     = Auth::user()->ci_usuario;
-
-        $encomienda = Encomienda::create(Arr::only($data, [
-            'viaje_id','guia_numero','estado','fecha','horario','hora_recepcion',
-            'remitente_id','remitente_nombre','remitente_telefono',
-            'consignatario_nombre','consignatario_ci','consignatario_telefono',
-            'cajero_id','es_carga',
-        ]));
-
-        foreach ($data['items'] as $item) {
-            $encomienda->items()->create($item);
+        if (!$turnoAbierto) {
+            return back()->withErrors(['turno' => 'Debe iniciar un turno antes de poder registrar la encomienda.']);
         }
-
-        return redirect()
-            ->route('encomiendas.index')
-            ->with('success', 'Encomienda creada correctamente.');
     }
 
+    $data = $request->validate([
+        'viaje_id'               => 'required|exists:viajes,id',
+        'fecha'                  => 'required|date',
+        'horario'                => 'required|date_format:H:i',
+        'hora_recepcion'         => 'required|date_format:H:i',
+        'estado'                 => 'required|in:por_pagar,pagado',
+        'cajero_id'              => 'required|exists:usuarios,ci_usuario',
+        'destino'                => 'required|string|max:100',
+        'remitente_id'           => 'required|string|max:50',
+        'remitente_nombre'       => 'required|string|max:255',
+        'remitente_telefono'     => 'required|string|max:20',
+        'consignatario_nombre'   => 'required|string|max:255',
+        'consignatario_ci'       => 'required|string|max:50',
+        'consignatario_telefono' => 'required|string|max:20',
+        'items'                  => 'required|array|min:1',
+        'items.*.cantidad'       => 'required|integer|min:1',
+        'items.*.descripcion'    => 'required|string',
+        'items.*.peso'           => 'required|numeric|min:0.01',
+        'items.*.costo'          => 'required|numeric|min:0',
+    ]);
+    $data['guia_numero']   = 'E'.now()->format('YmdHis');
+    $data['es_carga']      = false;
+    $data['cajero_id']     = Auth::user()->ci_usuario;
+    
+    $encomienda = Encomienda::create(Arr::only($data, [
+        'viaje_id','guia_numero','estado','fecha','horario','hora_recepcion',
+        'remitente_id','remitente_nombre','remitente_telefono',
+        'consignatario_nombre','consignatario_ci','consignatario_telefono',
+        'cajero_id','es_carga','destino'
+    ]));
+
+    foreach ($data['items'] as $item) {
+        $encomienda->items()->create($item);
+    }
+
+    $turno = Turno::de(Auth::user()->ci_usuario, Auth::user()->sucursal, Auth::user()->rol)
+                  ->abierto()
+                  ->first();
+
+    if ($turno) {
+        $totalEncomienda = collect($data['items'])->sum(function ($item) {
+            return $item['costo'] * $item['cantidad'];
+        });
+
+        $turno->movimientos()->create([
+            'tipo_movimiento' => 'pago_encomienda',
+            'descripcion'     => 'Encomienda #'. $encomienda->guia_numero,
+            'monto'            => $totalEncomienda,
+            'es_pago_pendiente'=> false,
+            'sucursal_origen'  => $turno->sucursal_id,
+            'pago_en_destino'  => $data['estado'] === 'por_pagar' ? 1 : 0,
+            'sincronizado'     => false,
+        ]);
+
+        $turno->update([
+            'saldo_final' => $turno->saldo_inicial + $turno->total_ingresos + $turno->total_egresos,
+        ]);
+    }
+
+    return redirect()
+        ->route('encomiendas.index')
+        ->with('success', 'Encomienda creada correctamente.');
+}
+
+    
     public function show(Encomienda $encomienda)
     {
         $encomienda->load(['viaje.ruta', 'viaje.bus', 'cajero', 'items']);
@@ -102,47 +136,65 @@ class EncomiendaController extends Controller
             'horario'                => 'required|date_format:H:i',
             'hora_recepcion'         => 'required|date_format:H:i',
             'estado'                 => 'required|in:por_pagar,pagado',
-
+    
             'remitente_id'           => 'required|string|max:50',
             'remitente_nombre'       => 'required|string|max:255',
             'remitente_telefono'     => 'required|string|max:20',
-
+            'destino'     => 'required|string',
             'consignatario_nombre'   => 'required|string|max:255',
             'consignatario_ci'       => 'required|string|max:50',
             'consignatario_telefono' => 'required|string|max:20',
-
+    
             'items'                  => 'required|array|min:1',
             'items.*.cantidad'       => 'required|integer|min:1',
             'items.*.descripcion'    => 'required|string',
             'items.*.peso'           => 'required|numeric|min:0.01',
             'items.*.costo'          => 'required|numeric|min:0',
         ]);
-
+    
+        $oldTotal = $encomienda->items->sum('costo');
+    
         $encomienda->update(Arr::only($data, [
             'viaje_id','estado','fecha','horario','hora_recepcion',
             'remitente_id','remitente_nombre','remitente_telefono',
-            'consignatario_nombre','consignatario_ci','consignatario_telefono'
+            'consignatario_nombre','consignatario_ci','consignatario_telefono',
+            'destino'
         ]));
-
+    
         $encomienda->items()->delete();
+    
+        $newTotal = 0;
         foreach ($data['items'] as $item) {
-            $encomienda->items()->create($item);
+            $detalle = $encomienda->items()->create($item);
+            $newTotal += $detalle->costo;
         }
-
+    
+        $turno = $encomienda->turno;
+    
+        if ($turno) {
+    
+            $turno->increment('total_pagado', $newTotal - $oldTotal);
+        }
+    
         return redirect()
             ->route('encomiendas.index')
             ->with('success', 'Encomienda actualizada correctamente.');
     }
-
+    
     public function destroy(Encomienda $encomienda)
     {
+        if ($encomienda->turno) {
+            $encomienda->turno->decrement('total_pagado', $encomienda->items->sum('costo'));
+        }
+    
         $encomienda->items()->delete();
         $encomienda->delete();
-
+    
         return redirect()
             ->route('encomiendas.index')
             ->with('success', 'Encomienda eliminada correctamente.');
     }
+    
     public function pdf(Encomienda $encomienda)
     {
         $encomienda->load([
@@ -151,11 +203,11 @@ class EncomiendaController extends Controller
             'viaje.bus',
             'viaje.ruta',
         ]);
-    
-        
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('encomiendas.pdf', compact('encomienda'))
-            ->setPaper([0, 0, 226.77, 841.89], 'portrait');
 
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('encomiendas.pdf', [
+            'encomienda' => $encomienda
+        ]);
+        $pdf->setPaper([0, 0, 226.77, 400], 'portrait'); 
         return $pdf->stream("Encomienda_{$encomienda->guia_numero}.pdf");
     }
     

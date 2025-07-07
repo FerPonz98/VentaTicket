@@ -10,7 +10,7 @@
 <body class="h-full flex">
   <aside class="w-64 bg-gray-800 text-gray-200 flex flex-col">
     <div class="p-6 flex items-center">
-      <img src="{{ asset('img/logo-empresa.jpg') }}" class="h-8 w-auto" alt="Logo">
+      
       <span class="ml-2 font-bold text-xl">Mi Sistema</span>
     </div>
     <nav class="flex-1 overflow-y-auto">
@@ -49,7 +49,7 @@
 @endif
 
 {{-- Encomiendas --}}
-@if(in_array($rol, ['admin','supervisor gral','supervisor suc','cajero','ventas qr','encomienda']))
+@if(in_array($rol, ['admin','supervisor gral','supervisor suc','cajero','ventas qr','encomienda','carga']))
   <li>
     <a href="{{ route('encomiendas.index') }}"
        class="block px-3 py-3 rounded hover:bg-gray-700 text-xl">
@@ -58,7 +58,7 @@
   </li>
 @endif
 {{-- Turnos --}}
-@if(in_array($rol, ['admin','supervisor gral','supervisor suc','cajero','ventas qr','encomienda']))
+@if(in_array($rol, ['admin','supervisor gral','supervisor suc','cajero','ventas qr','encomienda','carga']))
   <li>
     <a href="{{ route('turnos.index') }}" class="block px-3 py-3 rounded hover:bg-gray-700 text-xl">
       Turnos
@@ -112,5 +112,12 @@
       @yield('content')
     </main>
   </div>
+  
+{{-- Logo flotante, solo si no es lobby --}}
+@if (!request()->routeIs('lobby'))
+    <img src="{{ asset('img/logo-empresa.jpg') }}"
+         class="fixed top-0 right-4 h-16 w-auto z-50 opacity-80"
+         alt="Logo">
+@endif
 </body>
 </html>

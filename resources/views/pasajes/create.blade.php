@@ -11,6 +11,11 @@
 
 <div class="max-w-lg mx-auto bg-white shadow rounded p-6">
   <h2 class="text-2xl font-bold mb-4 text-gray-900">Venta de Pasaje</h2>
+  @if($errors->has('turno'))
+    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6">
+        <p class="font-semibold">Error: {{ $errors->first('turno') }}</p>
+    </div>
+@endif
 
   {{-- 1) Selección de viaje --}}
   <form action="{{ route('pasajes.create') }}" method="GET" class="mb-6">
@@ -171,6 +176,7 @@
         <label class="block text-sm font-medium text-gray-700 mb-1">Nombre completo</label>
         <input type="text" name="nombre_completo" required
                value="{{ old('nombre_completo') }}"
+               autocomplete="off"
                class="w-full border-gray-300 rounded px-3 py-2"
                placeholder="Ej. Juan Pérez">
         @error('nombre_completo')<p class="text-red-600 text-sm">{{ $message }}</p>@enderror
@@ -186,6 +192,7 @@
           id="ci_usuario"
           value="{{ old('ci_usuario') }}"
           required
+          autocomplete="off"
           class="w-full border-gray-300 rounded px-3 py-2"
           placeholder="Ej. 12345678"
         >

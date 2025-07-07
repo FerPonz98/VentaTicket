@@ -32,7 +32,8 @@ class RutaController extends Controller
             $ruta->addParada(
                 $p['nombre'],                   
                 (float)$p['precio_pasaje'],     
-    
+           //     (float)$p['precio_encomienda_parada'], 
+           //     (float)$p['precio_carga_parada'],      
                 $p['hora'] ?? null              
             );
         }
@@ -67,7 +68,8 @@ class RutaController extends Controller
             $ruta->addParada(
                 $p['nombre'],                   
                 (float)$p['precio_pasaje'],     
-  
+             //   (float)$p['precio_encomienda_parada'], 
+                //(float)$p['precio_carga_parada'],      
                 $p['hora'] ?? null          
             );
         }

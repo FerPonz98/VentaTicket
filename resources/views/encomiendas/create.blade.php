@@ -7,6 +7,7 @@
      class="inline-block text-indigo-600 hover:text-indigo-800 underline mb-4">
     &larr; Volver al listado
   </a>
+ 
 <div class="container mx-auto mt-8">
   <div class="bg-white shadow-lg rounded-lg p-6 overflow-x-auto">
     <h2 id="form_title" class="text-2xl font-bold text-black mb-4">
@@ -141,15 +142,15 @@
         <label class="block text-sm text-black">Nombre</label>
         <input type="text" name="remitente_nombre" required
           value="{{ old('remitente_nombre') }}"
-          class="mt-1 block w-full border-gray-300 rounded-md bg-gray-100 text-black"/>
+          class="mt-1 block w-full border-gray-300 rounded-md bg-gray-100 text-black pl-2"/>
         <label class="block text-sm mt-2 text-black">CI</label>
         <input type="text" name="remitente_id" required
           value="{{ old('remitente_id') }}"
-          class="mt-1 block w-full border-gray-300 rounded-md bg-gray-100 text-black"/>
+          class="mt-1 block w-full border-gray-300 rounded-md bg-gray-100 text-black pl-2"/>
         <label class="block text-sm mt-2 text-black">Teléfono</label>
         <input type="text" name="remitente_telefono" required
           value="{{ old('remitente_telefono') }}"
-          class="mt-1 block w-full border-gray-300 rounded-md bg-gray-100 text-black"/>
+          class="mt-1 block w-full border-gray-300 rounded-md bg-gray-100 text-black pl-2"/>
       </div>
 
       {{-- Consignatario --}}
@@ -158,15 +159,15 @@
         <label class="block text-sm text-black">Nombre</label>
         <input type="text" name="consignatario_nombre"
           value="{{ old('consignatario_nombre') }}"
-          class="mt-1 block w-full border-gray-300 rounded-md bg-gray-100 text-black"/>
+          class="mt-1 block w-full border-gray-300 rounded-md bg-gray-100 text-black pl-2"/>
         <label class="block text-sm mt-2 text-black">CI</label>
         <input type="text" name="consignatario_ci"
           value="{{ old('consignatario_ci') }}"
-          class="mt-1 block w-full border-gray-300 rounded-md bg-gray-100 text-black"/>
+          class="mt-1 block w-full border-gray-300 rounded-md bg-gray-100 text-black pl-2"/>
         <label class="block text-sm mt-2 text-black">Teléfono</label>
         <input type="text" name="consignatario_telefono"
           value="{{ old('consignatario_telefono') }}"
-          class="mt-1 block w-full border-gray-300 rounded-md bg-gray-100 text-black"/>
+          class="mt-1 block w-full border-gray-300 rounded-md bg-gray-100 text-black pl-2"/>
       </div>
 
       {{-- Detalle de Guía --}}

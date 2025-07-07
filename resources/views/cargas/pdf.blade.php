@@ -42,7 +42,7 @@
       vertical-align: top;
       text-align: left;
       max-width: 60px;        
-      word-break: break-word;  /* Permite salto de línea dentro de la celda */
+      word-break: break-word;  
     }
     .descripcion-col {
       max-width: 90px;

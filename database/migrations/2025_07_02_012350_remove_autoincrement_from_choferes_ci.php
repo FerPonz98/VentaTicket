@@ -1,28 +1,25 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
-        Schema::table('choferes', function (Blueprint $table) {
-            //
-        });
+        // DROP AUTO_INCREMENT de la columna CI
+        DB::statement("
+          ALTER TABLE `choferes`
+          MODIFY COLUMN `CI` BIGINT UNSIGNED NOT NULL
+        ");
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
-        Schema::table('choferes', function (Blueprint $table) {
-            //
-        });
+        // volver a añadir AUTO_INCREMENT
+        DB::statement("
+          ALTER TABLE `choferes`
+          MODIFY COLUMN `CI` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT
+        ");
     }
 };

@@ -11,6 +11,7 @@
                 Nueva contraseña
             </label>
             <input id="password" name="password" type="password" required
+                   autocomplete="new-password"
                    class="mt-1 block w-full rounded-md bg-gray-100 border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
             @error('password')
                 <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
@@ -22,6 +23,7 @@
                 Confirmar contraseña
             </label>
             <input id="password_confirmation" name="password_confirmation" type="password" required
+                   autocomplete="new-password"
                    class="mt-1 block w-full rounded-md bg-gray-100 border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
         </div>
 

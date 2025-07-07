@@ -61,11 +61,27 @@ class AuthenticatedSessionController extends Controller
         };
     }
 
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request)
     {
+        $user = $request->user();
+
+        // Busca turno abierto del usuario
+        $turno = \App\Models\Turno::de($user->ci_usuario, $user->sucursal, $user->rol)
+            ->abierto()
+            ->first();
+
+        if ($turno) {
+            $turno->update([
+                'abierto' => false,
+                'fecha_fin' => now(),
+                'saldo_final' => $turno->saldo_inicial + $turno->movimientos()->sum('monto'),
+            ]);
+        }
+
         Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect('/');
     }
 }

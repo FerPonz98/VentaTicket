@@ -26,9 +26,9 @@
       padding: 2px 0;
       vertical-align: top;
       font-size: 11px;
-      max-width: 90px;         /* Ajusta el ancho máximo según tu diseño */
-      word-break: break-word;  /* Permite salto de línea dentro de la celda */
-      white-space: normal;     /* Permite saltos de línea automáticos */
+      max-width: 90px;        
+      word-break: break-word;
+      white-space: normal;    
     }
     hr { border: none; border-top: 1px dashed #000; margin: 6px 0; }
     .small { font-size: 9px; }
@@ -113,7 +113,17 @@
   </tr>
   <tr>
     <td><strong>Pago:</strong></td>
-    <td>{{ ucfirst($pasaje->forma_pago) }}</td>
+    <td>
+      @if($pasaje->forma_pago === 'venta_efectivo')
+        Efectivo
+      @elseif($pasaje->forma_pago === 'venta_qr')
+        QR
+      @elseif($pasaje->forma_pago === 'pago_destino')
+        Pago en destino
+      @else
+        {{ ucfirst($pasaje->forma_pago) }}
+      @endif
+    </td>
   </tr>
   <tr>
     <td><strong>Precio:</strong></td>

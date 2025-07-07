@@ -144,22 +144,32 @@
           <label class="block font-semibold mb-1">Rol</label>
           <select name="rol" class="w-full bg-gray-100 border rounded px-3 py-2" required>
             <option value="">-- Seleccione --</option>
-            <option value="admin"           {{ old('rol')=='admin'           ?'selected':'' }}>Admin</option>
             <option value="supervisor gral" {{ old('rol')=='supervisor gral' ?'selected':'' }}>Supervisor Gral</option>
             <option value="supervisor suc"  {{ old('rol')=='supervisor suc'  ?'selected':'' }}>Supervisor SUC</option>
             <option value="cajero"          {{ old('rol')=='cajero'          ?'selected':'' }}>Cajero</option>
             <option value="ventas qr"       {{ old('rol')=='ventas qr'       ?'selected':'' }}>Ventas QR</option>
             <option value="carga"           {{ old('rol')=='carga'           ?'selected':'' }}>Carga</option>
             <option value="encomienda"      {{ old('rol')=='encomienda'      ?'selected':'' }}>Encomienda</option>
-            <option value="chofer y ayudante" {{ old('rol')=='chofer y ayudante' ?'selected':'' }}>Chofer o Ayudante</option>
+            <option value="chofer"          {{ old('rol')=='chofer'          ?'selected':'' }}>Chofer</option>
+            <option value="ayudante"        {{ old('rol')=='ayudante'        ?'selected':'' }}>Ayudante</option>
+            @if(Auth::user()->rol === 'admin')
+              <option value="admin" {{ old('rol')=='admin' ?'selected':'' }}>Admin</option>
+            @endif
           </select>
           @error('rol') <p class="text-red-600 text-sm mt-1">{{ $message }}</p> @enderror
         </div>
+
         {{-- Sucursal --}}
         <div>
           <label class="block font-semibold mb-1">Sucursal</label>
-          <input type="text" name="sucursal" value="{{ old('sucursal') }}"
-                 class="w-full bg-gray-100 border rounded px-3 py-2" required>
+          <select name="sucursal" class="w-full bg-gray-100 border rounded px-3 py-2" required>
+            <option value="">-- Seleccione --</option>
+            @foreach($sucursales as $sucursal)
+              <option value="{{ $sucursal->nombre }}" {{ old('sucursal') == $sucursal->nombre ? 'selected' : '' }}>
+                {{ $sucursal->nombre }}
+              </option>
+            @endforeach
+          </select>
           @error('sucursal') <p class="text-red-600 text-sm mt-1">{{ $message }}</p> @enderror
         </div>
 

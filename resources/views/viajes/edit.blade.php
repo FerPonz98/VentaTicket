@@ -43,6 +43,22 @@
       </div>
 
       <div>
+        <label class="block mb-1 text-gray-700">Sucursal</label>
+        <select name="sucursal_id"
+                class="w-full bg-gray-50 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
+                required>
+          <option value="">Selecciona una sucursal</option>
+          @foreach($sucursales as $id => $nombre)
+            <option value="{{ $id }}"
+              {{ old('sucursal_id', $viaje->sucursal_id ?? '') == $id ? 'selected' : '' }}>
+              {{ $nombre }}
+            </option>
+          @endforeach
+        </select>
+        @error('sucursal_id') <p class="mt-1 text-red-600 text-sm">{{ $message }}</p> @enderror
+      </div>
+
+      <div>
         <label class="block mb-1 text-gray-700">Fecha de salida</label>
         <input type="datetime-local" name="fecha_salida"
                value="{{ old('fecha_salida', \Carbon\Carbon::parse($viaje->fecha_salida)->format('Y-m-d\TH:i')) }}"

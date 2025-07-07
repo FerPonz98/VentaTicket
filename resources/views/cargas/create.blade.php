@@ -122,15 +122,15 @@
           <label class="block text-sm text-black">Nombre</label>
           <input type="text" name="remitente_nombre" required
                  value="{{ old('remitente_nombre') }}"
-                 class="mt-1 block w-full border-gray-300 rounded-md bg-gray-100 text-black"/>
+                 class="mt-1 block w-full border-gray-300 rounded-md bg-gray-100 text-black pl-2"/>
           <label class="block text-sm mt-2 text-black">CI</label>
           <input type="text" name="remitente_ci" required
                  value="{{ old('remitente_ci') }}"
-                 class="mt-1 block w-full border-gray-300 rounded-md bg-gray-100 text-black"/>
+                 class="mt-1 block w-full border-gray-300 rounded-md bg-gray-100 text-black pl-2"/>
           <label class="block text-sm mt-2 text-black">Teléfono</label>
           <input type="text" name="remitente_telefono" required
                  value="{{ old('remitente_telefono') }}"
-                 class="mt-1 block w-full border-gray-300 rounded-md bg-gray-100 text-black"/>
+                 class="mt-1 block w-full border-gray-300 rounded-md bg-gray-100 text-black pl-2"/>
         </div>
 
         {{-- Detalle de Carga --}}

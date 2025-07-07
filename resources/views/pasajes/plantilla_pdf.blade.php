@@ -5,13 +5,30 @@
   <style>
     @page { size: 21.59cm 35.56cm; margin: 0.5cm; }
     body { margin:0; padding:0; font-family: Arial, sans-serif; -webkit-print-color-adjust: exact; }
-    .header { position: relative; height: 4cm; text-align: center; }
-    .header img { position: absolute; top: 0.5cm; width: 3cm; height: auto; }
-    .header img.left { left: 0.5cm; }
-    .header img.right { right: 0.5cm; }
-    .header .title    { font-size: 24pt; color: #c0392b; margin-top: 0.5cm; }
-    .header .subtitle { font-size: 18pt; color: #2980b9; }
-    .header .tagline  { font-size: 10pt; color: #555; }
+    .header { position: relative; height: 4.3cm; text-align: center; }
+    .header img { position: absolute; top: 0.2cm; height: auto; }
+    .header img.left { left: 0.8cm; width: 4cm; }
+    .header img.right { right: 0.8cm;  width: 4cm;}
+    .header img.center {
+    width: 5cm;
+    height: auto;
+    left: 50%;
+    top: 0.8cm;
+    transform: translateX(-50%);
+    position: absolute;
+}
+    .header .title    { font-size: 28pt; color: #c0392b; margin-top: 0.5cm; }
+    .header .servicio {
+    color: #c0392b;
+    font-size: 16pt;
+    font-weight: bold;
+}
+.header .comodidad {
+    font-size:11pt;
+    color:#c0392b;
+    font-weight:bold;
+    margin-top:2.7cm; 
+}
 
     .fields { width:100%; font-size:9pt; border-collapse: collapse; margin:0.3cm 0; page-break-inside: avoid; }
     .fields td { padding:0.1cm 0.3cm; vertical-align: top; }
@@ -35,8 +52,23 @@
 
     .pasajeros-table { width:100%; font-size:8pt; border-collapse: collapse; margin-top:0.5cm; }
     .pasajeros-table th, .pasajeros-table td { border:1px solid #ddd; padding:0.2cm; }
+    .pasajeros-table td, .pasajeros-table th {
+    max-width: 3.5cm;
+    word-break: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: pre-line;
+}
+    .pasajeros-table td:nth-child(5), .pasajeros-table th:nth-child(5) { 
+    max-width: 3cm;
+}
     .pasajeros-table thead th { background:#f0f0f0; }
     .footer { position: fixed; bottom:0.3cm; width:100%; text-align:center; font-size:8pt; color:#555; }
+    .estrellas {
+    color: #c0392b;
+    font-size: 15pt;
+    font-family: DejaVu Sans, sans-serif;
+}
   </style>
 </head>
 <body>
@@ -68,11 +100,12 @@
 @endphp
 
   <div class="header">
-    <img src="{{ asset('images/bus_left.png') }}" class="left" />
-    <img src="{{ asset('images/bus_right.png') }}" class="right"/>
-    <div class="title">Servicio Interprovincial de Buses</div>
-    <div class="subtitle">Línea 102 TransGuarayos</div>
-    <div class="tagline">COMODIDAD Y PUNTUALIDAD ANTE TODO</div>
+    <div class="servicio">Servicio Interprovincial de Buses</div>
+    <img src="{{ public_path('build/img/logo-empresa.jpg') }}" class="center" />
+    <img src="{{ public_path('build/img/bus_derecha.png') }}" class="right"/>
+    <img src="{{ public_path('build/img/bus_izq.png') }}" class="left"/>
+    <div class="comodidad">COMODIDAD Y PUNTUALIDAD ANTE TODO</div>
+    <div class="estrellas">&#9733; &#9733; &#9733; &#9733; &#9733;</div>
   </div>
 
   <table class="fields">
@@ -183,6 +216,62 @@
     </tbody>
   </table>
 
+{{-- Tabla de Encomiendas --}}
+<h3>Tabla de Encomiendas</h3>
+<table class="pasajeros-table">
+    <thead>
+        <tr>
+            <th>N° Guía</th>
+            <th>Remitente</th>
+            <th>Destinatario</th>
+            <th>Destino</th>
+            <th>Descripción</th>
+            <th>Estado</th>
+            <th>Costo</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($viaje->encomiendas ?? [] as $e)
+            @php
+                $item = $e->items->first();
+            @endphp
+            <tr>
+                <td>{{ $e->guia_numero ?? '-' }}</td>
+                <td>{{ $e->remitente_nombre ?? '-' }}</td>
+                <td>{{ $e->consignatario_nombre ?? '-' }}</td>
+                <td>{{ $e->destino ?? '-' }}</td>
+                <td>{{ $item->descripcion ?? '-' }}</td>
+                <td>{{ $e->estado ?? '-' }}</td>
+                <td>Bs {{ number_format($e->costo ?? 0, 2) }}</td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+
+{{-- Tabla de Cargas --}}
+<h3>Tabla de Cargas</h3>
+<table class="pasajeros-table">
+    <thead>
+        <tr>
+            <th>N° Guía</th>
+            <th>Remitente</th>
+            <th>Destino</th>
+            <th>Estado</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($viaje->cargas ?? [] as $c)
+            <tr>
+                <td>{{ $c->nro_guia }}</td>
+                <td>{{ $c->remitente_nombre }}</td>
+                <td>{{ $c->destino }}</td>
+                <td>{{ $c->estado }}</td>
+                <td>Bs {{ number_format($c->detalles->sum('costo'), 2) }}</td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
   <pre>
 
 </pre>

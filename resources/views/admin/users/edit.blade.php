@@ -152,7 +152,6 @@
                   class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2">
             <option value="">-- Seleccione --</option>
             @foreach([
-              'admin' => 'Admin',
               'supervisor gral' => 'Supervisor Gral',
               'supervisor suc' => 'Supervisor SUC',
               'cajero' => 'Cajero',
@@ -166,16 +165,24 @@
                 {{ $label }}
               </option>
             @endforeach
+            @if(Auth::user()->rol === 'admin')
+              <option value="admin" {{ old('rol',$usuario->rol)=='admin'?'selected':'' }}>Admin</option>
+            @endif
           </select>
           @error('rol') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
         </div>
         {{-- Sucursal --}}
         <div>
-          <label class="block font-medium mb-1">Sucursal</label>
-          <input name="sucursal"
-                 value="{{ old('sucursal', $usuario->sucursal) }}"
-                 class="w-full bg-gray-100 border border-gray-300 rounded px-3 py-2"/>
-          @error('sucursal') <p class="text-red-600 text-sm">{{ $message }}</p> @enderror
+          <label class="block font-semibold mb-1">Sucursal</label>
+          <select name="sucursal" class="w-full bg-gray-100 border rounded px-3 py-2" required>
+            <option value="">-- Seleccione --</option>
+            @foreach($sucursales as $sucursal)
+              <option value="{{ $sucursal->nombre }}" {{ old('sucursal', $usuario->sucursal) == $sucursal->nombre ? 'selected' : '' }}>
+                {{ $sucursal->nombre }}
+              </option>
+            @endforeach
+          </select>
+          @error('sucursal') <p class="text-red-600 text-sm mt-1">{{ $message }}</p> @enderror
         </div>
 
         {{-- Foto de Perfil --}}

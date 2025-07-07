@@ -4,22 +4,35 @@ namespace App\Http\Controllers;
 
 use App\Models\Pasaje;
 use App\Models\Viaje;
+use App\Models\Turno;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use App\Models\MovimientoTurno;
+
 
 class PasajeController extends Controller
 {
     public function index(Request $request)
     {
         $fecha = $request->input('fecha', now()->toDateString());
-        $viajesHoy = Viaje::with(['bus','ruta','pasajes'])
-                          ->whereDate('fecha_salida', $fecha)
-                          ->orderBy('fecha_salida')
-                          ->get();
+        $user = Auth::user();
 
-        $pasajesRecientes = \App\Models\Pasaje::with(['viaje.bus', 'viaje.ruta'])
+        $viajesHoy = Viaje::with(['bus','ruta','pasajes'])
+            ->when($user->rol !== 'admin', function ($query) use ($user) {
+                $query->where('sucursal_id', $user->sucursal_id);
+            })
+            ->whereDate('fecha_salida', $fecha)
+            ->orderBy('fecha_salida')
+            ->get();
+
+        $pasajesRecientes = Pasaje::with(['viaje.bus', 'viaje.ruta'])
+            ->when($user->rol !== 'admin', function ($query) use ($user) {
+                $query->whereHas('viaje', function($q) use ($user) {
+                    $q->where('sucursal_id', $user->sucursal_id);
+                });
+            })
             ->latest()
             ->take(10)
             ->get();
@@ -83,10 +96,18 @@ class PasajeController extends Controller
    
     public function create(Request $request)
     {
-        $viajes = Viaje::with('ruta','bus')
+        $user = Auth::user();
+
+        $sucursalId = \App\Models\Sucursal::where('nombre', $user->sucursal)->value('id');
+
+        $viajes = Viaje::with(['bus', 'ruta'])
+            ->when($user->rol !== 'admin', function ($query) use ($sucursalId) {
+                $query->where('sucursal_id', $sucursalId);
+            })
             ->whereDate('fecha_salida', '>=', now()->toDateString())
             ->orderBy('fecha_salida')
             ->get();
+
         $tipos = [
             'adulto'       => 'Adulto',
             'tercera_edad' => '3ra Edad',
@@ -95,10 +116,9 @@ class PasajeController extends Controller
             'desc'         => 'Descuento',
         ];
         $formasPago = [
-            'efectivo'     => 'Efectivo',
-            'tarjeta'      => 'Tarjeta',
-            'qr'           => 'QR',
-            'pago_destino' => 'Pago en Destino',
+            'venta_efectivo'     => 'Efectivo',
+            'venta_qr'           => 'QR',
+            'pago_destino'       => 'Pago en Destino',
         ];
 
         $viajeSeleccionado = $request->query('viaje_id');
@@ -127,23 +147,40 @@ class PasajeController extends Controller
             'edad'            => 'required|integer|min:0|max:150',
             'tipo_pasajero'   => 'required|in:adulto,tercera_edad,menor,cortesia,desc',
             'fecha'           => 'required|date',
-            'forma_pago'      => 'required|in:efectivo,tarjeta,qr,pago_destino',
+            'forma_pago'      => 'required|in:venta_efectivo,venta_qr,pago_destino',
             'tipo_descuento'  => 'nullable|in:desc2,desc3',
         ]);
-
+    
+        $userRole = Auth::user()->rol; 
+        
+        if (!in_array($userRole, ['admin', 'supervisor_general', 'supervisor_sucursal'])) {
+         
+            $turnoAbierto = Turno::de(Auth::user()->ci_usuario, Auth::user()->sucursal, Auth::user()->rol)
+                                 ->abierto()
+                                 ->first();
+    
+            if (!$turnoAbierto) {
+               
+                return back()->withInput()->withErrors(['turno' => 'Debe iniciar un turno antes de poder registrar el pasaje.']);
+            }
+        }
+    
         if ($data['tipo_pasajero'] === 'menor' && $data['edad'] >= 18) {
             return back()->withInput()->withErrors(['edad' => 'No puede seleccionar "Menor de Edad" para mayores de 17 años.']);
         }
+    
         if ($data['tipo_pasajero'] === 'tercera_edad' && $data['edad'] <= 60) {
             return back()->withInput()->withErrors(['edad' => 'Solo personas mayores de 60 años pueden ser "3ra Edad".']);
         }
-
+    
         $data['menor_edad']   = $data['edad'] < 18 ? 1 : 0;
         $data['tercera_edad'] = $data['edad'] > 60 ? 1 : 0;
         Session::put('venta.datos', $data);
-
+    
         return redirect()->route('pasajes.confirmar');
     }
+    
+
 
     public function confirmar()
     {
@@ -166,48 +203,60 @@ class PasajeController extends Controller
     }
 
     public function finalizar()
-    {
-        $data = Session::pull('venta.datos');
-        if (! $data) {
-            return redirect()->route('pasajes.create');
-        }
-
-        $viaje = Viaje::with('ruta')->findOrFail($data['viaje_id']);
-        if (\Carbon\Carbon::parse($viaje->fecha_salida)->lt(now()->startOfDay())) {
-            return back()->withInput()->withErrors(['viaje_id' => 'No se puede vender pasaje para un viaje en el pasado.']);
-        }
-
-        $precioBase = $viaje->precio;
-
-        // Si hay paradas, busca el precio de la parada seleccionada
-        $paradas = $viaje->ruta->paradas;
-        if (!empty($data['destino']) && is_array($paradas)) {
-            foreach ($paradas as $parada) {
-                if (isset($parada['nombre']) && $parada['nombre'] === $data['destino']) {
-                    $precioBase = $parada['precio_pasaje'];
-                    break;
-                }
-            }
-        }
-
-        $data['origen'] = $viaje->ruta->origen;
-        $data['precio'] = match($data['tipo_pasajero']) {
-            'tercera_edad' => max(0, $precioBase - $viaje->ruta->descuento_3ra_edad),
-            'menor'        => max(0, $precioBase * 0.5),
-            'cortesia'     => 0,
-            'desc'         => max(0, $precioBase - $viaje->ruta->descuento_2),
-            default        => $precioBase,
-        };
-        $data['cajero_id']       = Auth::user()->ci_usuario;
-        $data['hora_en_oficina'] = now()->format('H:i');
-
-        $pasaje = Pasaje::create($data);
-
-        $pdf = PDF::loadView('pasajes.pdf', ['pasaje' => $pasaje]);
-        $pdf->setPaper([0, 0, 226.77, 480], 'portrait');
-        return $pdf->stream("pasaje_{$pasaje->id}.pdf");
+{
+    $data = Session::pull('venta.datos');
+    if (! $data) {
+        return redirect()->route('pasajes.create');
     }
 
+    $viaje = Viaje::with('ruta')->findOrFail($data['viaje_id']);
+    if (\Carbon\Carbon::parse($viaje->fecha_salida)->lt(now()->startOfDay())) {
+        return back()->withInput()->withErrors(['viaje_id' => 'No se puede vender pasaje para un viaje en el pasado.']);
+    }
+
+    $precioBase = $viaje->precio;
+
+    $paradas = $viaje->ruta->paradas;
+    if (!empty($data['destino']) && is_array($paradas)) {
+        foreach ($paradas as $parada) {
+            if (
+                isset($parada['nombre'], $parada['precio_pasaje']) &&
+                $parada['nombre'] === $data['destino']
+            ) {
+                $precioBase = $parada['precio_pasaje'];
+                break;
+            }
+        }
+    }
+
+    $data['origen'] = $viaje->ruta->origen;
+    $data['precio'] = match($data['tipo_pasajero']) {
+        'tercera_edad' => max(0, $precioBase - $viaje->ruta->descuento_3ra_edad),
+        'menor'        => max(0, $precioBase * 0.5),
+        'cortesia'     => 0,
+        'desc'         => max(0, $precioBase - $viaje->ruta->descuento_2),
+        default        => $precioBase,
+    };
+    $data['cajero_id']       = Auth::user()->ci_usuario;
+    $data['hora_en_oficina'] = now()->format('H:i');
+
+    $pasaje = Pasaje::create($data);
+
+    $turno = Turno::de(Auth::user()->ci_usuario, Auth::user()->sucursal, Auth::user()->rol)
+                  ->abierto()
+                  ->first();
+
+    $precioPasaje = $data['precio'] ?? 0;
+
+    if ($turno) {
+        MovimientoTurno::registrarIngreso($turno->id, $precioPasaje, $data['forma_pago'], 'Venta de pasaje ');
+        MovimientoTurno::actualizarSaldoTurno($turno->id);
+    }
+
+    $pdf = PDF::loadView('pasajes.pdf', ['pasaje' => $pasaje]);
+    $pdf->setPaper([0, 0, 226.77, 480], 'portrait');
+    return $pdf->stream("pasaje_{$pasaje->id}.pdf");
+}
     public function show(Pasaje $pasaje)
     {
         $pasaje->load(['viaje.ruta','cajero']);
@@ -233,9 +282,8 @@ class PasajeController extends Controller
             'desc'         => 'Descuento',
         ];
         $formasPago = [
-            'efectivo'     => 'Efectivo',
-            'tarjeta'      => 'Tarjeta',
-            'qr'           => 'QR',
+            'venta_efectivo'     => 'Efectivo',
+            'venta_qr'           => 'QR',
             'pago_destino' => 'Pago en Destino',
         ];
 
@@ -250,7 +298,7 @@ class PasajeController extends Controller
             'nombre_completo' => 'required|string|max:255',
             'tipo_pasajero'   => 'required|in:adulto,tercera_edad,menor,cortesia,desc',
             'fecha'           => 'required|date',
-            'forma_pago'      => 'required|in:efectivo,tarjeta,qr,pago_destino',
+            'forma_pago'      => 'required|in:venta_efectivo,venta_qr,pago_destino',
         ]);
 
         $viaje = Viaje::with('ruta')->findOrFail($data['viaje_id']);

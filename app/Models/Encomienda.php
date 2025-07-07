@@ -30,6 +30,7 @@ class Encomienda extends Model
         'consignatario_ci',
         'consignatario_telefono',
         'cajero_id',
+        'destino',
     ];
 
     protected $casts = [

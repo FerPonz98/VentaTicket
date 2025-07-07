@@ -36,9 +36,22 @@ class CargaController extends Controller
             ->get();
         return view('cargas.create', compact('viajes'));
     }
-
     public function store(Request $request)
     {
+        $userRole = Auth::user()->rol; 
+    
+       
+        if (!in_array($userRole, ['admin', 'supervisor_general', 'supervisor_sucursal'])) {
+            $turnoAbierto = Turno::de(Auth::user()->ci_usuario, Auth::user()->sucursal, Auth::user()->rol)
+                                 ->abierto()
+                                 ->first();
+    
+            if (!$turnoAbierto) {
+               
+                return back()->withErrors(['turno' => 'Debe iniciar un turno antes de poder registrar la carga.']);
+            }
+        }
+    
         $validated = $request->validate([
             'viaje_id'            => 'required|exists:viajes,id',
             'origen'              => 'required|string',
@@ -54,38 +67,58 @@ class CargaController extends Controller
             'detalles.*.cantidad'    => 'required|integer|min:1',
             'detalles.*.descripcion' => 'required|string',
             'detalles.*.peso'        => 'required|numeric|min:0.01',
-            'detalles.*.costo'       => 'required|numeric|min:0',
+            'detalles.*.costo'       => 'required|numeric|min:0.01',
         ]);
-
+    
         $viaje = Viaje::findOrFail($validated['viaje_id']);
         if (\Carbon\Carbon::parse($viaje->fecha_salida)->lt(now()->startOfDay())) {
             return back()->withInput()->withErrors(['viaje_id' => 'No se puede registrar carga para un viaje en el pasado.']);
         }
-
+    
         $turno = Turno::firstOrCreate(
-            ['cajero_id' => Auth::user()->ci_usuario, 'fecha_fin' => null],
-            ['fecha_inicio' => now()]
+            [
+                'ci_usuario' => Auth::user()->ci_usuario,
+                'fecha_fin'  => null,
+                'sucursal_id'=> Auth::user()->sucursal_id ?? \App\Models\Sucursal::where('nombre', Auth::user()->sucursal)->value('id')
+            ],
+            [
+                'fecha_inicio' => now()
+            ]
         );
-
-        $validated['nro_guia']  = 'C' . now()->format('YmdHis');
-        $validated['cajero_id'] = Auth::user()->ci_usuario;
-        $validated['turno_id']  = $turno->id;
+    
+        $validated['nro_guia']    = 'C' . now()->format('YmdHis');
+        $validated['cajero_id']   = Auth::user()->ci_usuario;
+        $validated['ci_usuario']  = Auth::user()->ci_usuario;
+        $validated['turno_id']    = $turno->id;
+        $validated['sucursal_id'] = $viaje->sucursal_id;
 
         $carga = Carga::create($validated);
-
+    
         $totalCost = 0;
         foreach ($validated['detalles'] as $item) {
             $detalle = $carga->detalles()->create($item);
             $totalCost += $detalle->costo;
         }
-
-        $turno->increment('total_pagado', $totalCost);
-
+    
+        $turno->movimientos()->create([
+            'tipo_movimiento'   => 'pago_carga',
+            'descripcion'       => 'Carga #'. $carga->nro_guia,
+            'monto'             => $totalCost,
+            'es_pago_pendiente' => null,
+            'pago_en_destino'   => $validated['estado'] === 'por pagar',
+            'sincronizado'      => false,
+        ]);
+    
+        $turno->update([
+            'saldo_final' => $turno->saldo_inicial + $turno->total_ingresos + $turno->total_egresos,
+        ]);
+    
         return redirect()
             ->route('carga.index')
             ->with('success', 'Guía de carga creada correctamente.');
     }
-
+    
+    
  
     public function show(Carga $carga)
     {
@@ -104,56 +137,72 @@ class CargaController extends Controller
     }
 
     public function update(Request $request, Carga $carga)
-    {
-        $validated = $request->validate([
-            'viaje_id'            => 'required|exists:viajes,id',
-            'origen'              => 'required|string',
-            'destino'             => 'required|string',
-            'fecha'               => 'required|date',
-            'horario'             => 'required|date_format:H:i',
-            'hora_recepcion'      => 'nullable|date_format:H:i',
-            'estado'              => 'required|in:por pagar,pagado',
-            'remitente_nombre'    => 'required|string|max:255',
-            'remitente_ci'        => 'required|string|max:50',
-            'remitente_telefono'  => 'required|string|max:20',
-            'detalles'            => 'required|array|min:1',
-            'detalles.*.cantidad'    => 'required|integer|min:1',
-            'detalles.*.descripcion' => 'required|string',
-            'detalles.*.peso'        => 'required|numeric|min:0.01',
-            'detalles.*.costo'       => 'required|numeric|min:0',
-        ]);
+{
+    $userRole = Auth::user()->rol; 
 
-        $oldTotal = $carga->detalles->sum('costo');
+    if (!in_array($userRole, ['admin', 'supervisor_general', 'supervisor_sucursal'])) {
+        $turnoAbierto = Turno::de(Auth::user()->ci_usuario, Auth::user()->sucursal, Auth::user()->rol)
+                             ->abierto()
+                             ->first();
 
-        $carga->update([
-            'viaje_id'          => $validated['viaje_id'],
-            'origen'            => $validated['origen'],
-            'destino'           => $validated['destino'],
-            'fecha'             => $validated['fecha'],
-            'horario'           => $validated['horario'],
-            'hora_recepcion'    => $validated['hora_recepcion'],
-            'estado'            => $validated['estado'],
-            'remitente_nombre'  => $validated['remitente_nombre'],
-            'remitente_ci'      => $validated['remitente_ci'],
-            'remitente_telefono'=> $validated['remitente_telefono'],
-        ]);
-
-        $carga->detalles()->delete();
-        $newTotal = 0;
-        foreach ($validated['detalles'] as $item) {
-            $detalle = $carga->detalles()->create($item);
-            $newTotal += $detalle->costo;
+        if (!$turnoAbierto) {
+         
+            return back()->withErrors(['turno' => 'Debe iniciar un turno antes de poder actualizar la carga.']);
         }
-
-        $turno = $carga->turno;
-        if ($turno) {
-            $turno->increment('total_pagado', $newTotal - $oldTotal);
-        }
-
-        return redirect()
-            ->route('carga.index')
-            ->with('success', 'Guía de carga actualizada correctamente.');
     }
+
+    $validated = $request->validate([
+        'viaje_id'            => 'required|exists:viajes,id',
+        'origen'              => 'required|string',
+        'destino'             => 'required|string',
+        'fecha'               => 'required|date',
+        'horario'             => 'required|date_format:H:i',
+        'hora_recepcion'      => 'nullable|date_format:H:i',
+        'estado'              => 'required|in:por pagar,pagado',
+        'remitente_nombre'    => 'required|string|max:255',
+        'remitente_ci'        => 'required|string|max:50',
+        'remitente_telefono'  => 'required|string|max:20',
+        'detalles'            => 'required|array|min:1',
+        'detalles.*.cantidad'    => 'required|integer|min:1',
+        'detalles.*.descripcion' => 'required|string',
+        'detalles.*.peso'        => 'required|numeric|min:0.01',
+        'detalles.*.costo'       => 'required|numeric|min:0',
+    ]);
+
+    $oldTotal = $carga->detalles->sum('costo');
+
+    $carga->update([
+        'viaje_id'          => $validated['viaje_id'],
+        'origen'            => $validated['origen'],
+        'destino'           => $validated['destino'],
+        'fecha'             => $validated['fecha'],
+        'horario'           => $validated['horario'],
+        'hora_recepcion'    => $validated['hora_recepcion'],
+        'estado'            => $validated['estado'],
+        'remitente_nombre'  => $validated['remitente_nombre'],
+        'remitente_ci'      => $validated['remitente_ci'],
+        'remitente_telefono'=> $validated['remitente_telefono'],
+    ]);
+
+    $carga->detalles()->delete();
+
+    $newTotal = 0;
+    foreach ($validated['detalles'] as $item) {
+        $detalle = $carga->detalles()->create($item);
+        $newTotal += $detalle->costo;
+    }
+
+    $turno = $carga->turno;
+
+    if ($turno) {
+        $turno->increment('total_pagado', $newTotal - $oldTotal);
+    }
+
+    return redirect()
+        ->route('carga.index')
+        ->with('success', 'Guía de carga actualizada correctamente.');
+}
+    
 
    
     public function destroy(Carga $carga)
@@ -174,7 +223,7 @@ class CargaController extends Controller
     {
         $carga->load(['cajero', 'detalles', 'viaje.bus']);
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('cargas.pdf', compact('carga'))
-            ->setPaper([0,0,226.77,841.89], 'portrait');
+            ->setPaper([0,0,226.77,400], 'portrait');
         return $pdf->stream("Guia_Carga_{$carga->nro_guia}.pdf");
     }
 }

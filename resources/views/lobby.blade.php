@@ -11,7 +11,7 @@
 <div class="max-w-4xl mx-auto space-y-8">
     {{-- Tarjeta de bienvenida --}}
     <div class="bg-white p-8 rounded-2xl shadow-lg text-center">
-      <img src="{{ asset('img/logo-empresa.jpg') }}" alt="Logo" class="mx-auto h-16 mb-4">
+<img src="{{ asset('img/logo-empresa.jpg') }}" alt="Logo" class="mx-auto h-32 w-64 mb-4">
       <h1 class="text-4xl font-extrabold text-gray-800 mb-2">
         ¡Hola, {{ Auth::user()->nombre_usuario }}!
       </h1>

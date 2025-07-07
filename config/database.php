@@ -92,6 +92,14 @@ return [
             // 'encrypt' => env('DB_ENCRYPT', 'yes'),
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
+'disks' => [
+    'public' => [
+        'driver' => 'local',
+        'root' => public_path('storage'),
+        'url' => env('APP_URL').'/storage',
+        'visibility' => 'public',
+    ],
+],
 
     ],
 
